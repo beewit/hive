@@ -8,7 +8,9 @@ import (
 	"github.com/labstack/echo"
 
 	"fmt"
+
 	"github.com/labstack/echo/middleware"
+	"github.com/beewit/beekit/utils/convert"
 )
 
 func Start() {
@@ -31,5 +33,7 @@ func Start() {
 
 	utils.Open(global.Host)
 
-	e.Logger.Fatal(e.Start(":8090"))
+	port := ":" + convert.ToString(global.Port)
+
+	e.Logger.Fatal(e.Start(port))
 }
