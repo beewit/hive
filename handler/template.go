@@ -41,3 +41,4 @@ func GetTemplateById(c echo.Context) error {
 	}
 	return utils.Success(c, "有数据", convert.ToMapString(rows[0]))
 }
+
