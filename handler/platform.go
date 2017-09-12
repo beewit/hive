@@ -2,15 +2,17 @@ package handler
 
 import (
 	"github.com/labstack/echo"
+	"github.com/beewit/beekit/utils/convert"
 	"github.com/beewit/beekit/utils"
 	"github.com/beewit/hive/global"
-	"github.com/beewit/beekit/utils/convert"
+	"github.com/beewit/beekit/utils/enum"
 )
 
-func GetTemplateByList(c echo.Context) error {
-	sql := `SELECT * FROM article_template WHERE status = 1 LIMIT 1`
-	rows, err := global.DB.Query(sql)
+func GetPlatformList(c echo.Context) error {
+	sql := `SELECT * FROM platform WHERE status = ?`
+	rows, err := global.DB.Query(sql, enum.NORMAL)
 	if err != nil {
+		global.Log.Error("GetPlatformList：" + err.Error())
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
 	}
 	if len(rows) <= 0 {
@@ -19,14 +21,12 @@ func GetTemplateByList(c echo.Context) error {
 	return utils.Success(c, "获取数据成功", convert.ToArrayMapString(rows))
 }
 
-func GetTemplateById(c echo.Context) error {
-	id := c.Param("id")
-	if !utils.IsValidNumber(id) {
-		return utils.Error(c, "id非法", nil)
-	}
-	sql := `SELECT * FROM article_template WHERE id=? AND status = 1 LIMIT 1`
-	rows, err := global.DB.Query(sql, id)
+func GetPlatformId(c echo.Context) error {
+	t := c.FormValue("type")
+	sql := `SELECT * FROM platform WHERE type=? AND status = ? LIMIT 1`
+	rows, err := global.DB.Query(sql, t, enum.NORMAL)
 	if err != nil {
+		global.Log.Error("GetPlatformId：" + err.Error())
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
 	}
 	if len(rows) != 1 {
@@ -34,4 +34,3 @@ func GetTemplateById(c echo.Context) error {
 	}
 	return utils.Success(c, "获取数据成功", convert.ToMapString(rows[0]))
 }
-

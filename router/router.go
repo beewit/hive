@@ -30,6 +30,8 @@ func Start() {
 
 	e.GET("/api/template", handler.GetTemplateByList)
 	e.POST("/api/template/:id", handler.GetTemplateById)
+	e.POST("/api/platform", handler.GetPlatformList)
+	e.POST("/api/platform/one", handler.GetPlatformId)
 
 	utils.Open(global.Host)
 
