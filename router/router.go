@@ -28,7 +28,8 @@ func Start() {
 	e.Static("/page", "page")
 	e.File("/", "page/login.html")
 
-	e.GET("/api/template", handler.GetTemplateByList)
+	e.POST("/api/template", handler.GetTemplateByListPage)
+	e.POST("/api/template/update/refer/:id", handler.UpdateTemplateReferById)
 	e.POST("/api/template/:id", handler.GetTemplateById)
 	e.POST("/api/platform", handler.GetPlatformList)
 	e.POST("/api/platform/one", handler.GetPlatformId)

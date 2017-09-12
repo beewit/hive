@@ -16,5 +16,8 @@ var (
 	IP   = CFG.Get("server.ip")
 	Port = CFG.Get("server.port")
 	Host = fmt.Sprintf("http://%v:%v", IP, Port)
+)
 
+const (
+	PAGE_SIZE = 10
 )
