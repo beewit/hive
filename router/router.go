@@ -18,21 +18,17 @@ func Start() {
 
 	e := echo.New()
 	e.Use(middleware.Gzip())
-	//e.Use(middleware.Logger())
-	//e.Use(middleware.CSRF())
-	//e.Use(middleware.CORS())
 	e.Use(middleware.Recover())
-	e.Use(middleware.RequestID())
 
-	e.Static("/static", "static")
-	e.Static("/page", "page")
-	e.File("/", "page/login.html")
+	e.Static("/app", "app")
+	e.File("/", "app/page/index.html")
 
-	e.POST("/api/template", handler.GetTemplateByListPage)
-	e.POST("/api/template/update/refer/:id", handler.UpdateTemplateReferById)
-	e.POST("/api/template/:id", handler.GetTemplateById)
-	e.POST("/api/platform", handler.GetPlatformList)
-	e.POST("/api/platform/one", handler.GetPlatformId)
+	e.POST("/api/template", handler.GetTemplateByListPage, handler.Filter)
+	e.POST("/api/template/update/refer/:id", handler.UpdateTemplateReferById, handler.Filter)
+	e.POST("/api/template/:id", handler.GetTemplateById, handler.Filter)
+	e.POST("/api/platform", handler.GetPlatformList, handler.Filter)
+	e.POST("/api/platform/one", handler.GetPlatformId, handler.Filter)
+	e.POST("/api/rules/list",handler.GetRules,handler.Filter)
 
 	utils.Open(global.Host)
 
