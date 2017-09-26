@@ -1,13 +1,14 @@
 package handler
 
 import (
-	"github.com/labstack/echo"
-	"github.com/beewit/beekit/utils"
-	"github.com/beewit/hive/global"
-	"github.com/beewit/beekit/utils/convert"
-	"github.com/beewit/beekit/utils/enum"
 	"encoding/json"
 	"io/ioutil"
+
+	"github.com/beewit/beekit/utils"
+	"github.com/beewit/beekit/utils/convert"
+	"github.com/beewit/beekit/utils/enum"
+	"github.com/beewit/hive/global"
+	"github.com/labstack/echo"
 )
 
 func readBody(c echo.Context) (map[string]string, error) {
@@ -53,7 +54,7 @@ func Filter(next echo.HandlerFunc) echo.HandlerFunc {
 			global.Log.Error(accMapStr + "，error：" + err.Error())
 			return utils.AuthFail(c, "登陆信息已失效，请重新登陆")
 		}
-		m, err := global.DB.Query("SELECT id,nickname,photo,member_type_id,member_type_name,mobile,member_expir_time,status FROM account WHERE id=? LIMIT 1", accMap["id"])
+		m, err := global.DB.Query("SELECT id,nickname,photo,mobile,status FROM account WHERE id=? LIMIT 1", accMap["id"])
 		if err != nil {
 			return utils.AuthFail(c, "获取用户信息失败")
 		}
@@ -68,12 +69,13 @@ func Filter(next echo.HandlerFunc) echo.HandlerFunc {
 
 func GetTemplateByListPage(c echo.Context) error {
 	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
+	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
 	page, err := global.DB.QueryPage(&utils.PageTable{
-		Table:     "article_template",
 		Fields:    "*",
+		Table:     "article_template",
 		Where:     "status = 1 ORDER BY `order` DESC,ct_time DESC",
 		PageIndex: pageIndex,
-		PageSize:  global.PAGE_SIZE,
+		PageSize:  pageSize,
 	})
 	if err != nil {
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
@@ -109,7 +111,7 @@ func GetTemplateByList(c echo.Context) error {
 	if len(rows) <= 0 {
 		return utils.Success(c, "无数据", nil)
 	}
-	return utils.Success(c, "获取数据成功", convert.ToArrayMapString(rows))
+	return utils.Success(c, "获取数据成功", rows)
 }
 
 func GetTemplateById(c echo.Context) error {
@@ -125,5 +127,5 @@ func GetTemplateById(c echo.Context) error {
 	if len(rows) != 1 {
 		return utils.Success(c, "无数据", nil)
 	}
-	return utils.Success(c, "获取数据成功", convert.ToMapString(rows[0]))
+	return utils.Success(c, "获取数据成功", rows[0])
 }

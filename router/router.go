@@ -9,8 +9,8 @@ import (
 
 	"fmt"
 
-	"github.com/labstack/echo/middleware"
 	"github.com/beewit/beekit/utils/convert"
+	"github.com/labstack/echo/middleware"
 )
 
 func Start() {
@@ -28,7 +28,10 @@ func Start() {
 	e.POST("/api/template/:id", handler.GetTemplateById, handler.Filter)
 	e.POST("/api/platform", handler.GetPlatformList, handler.Filter)
 	e.POST("/api/platform/one", handler.GetPlatformId, handler.Filter)
-	e.POST("/api/rules/list",handler.GetRules,handler.Filter)
+	e.POST("/api/rules/list", handler.GetRules, handler.Filter)
+	e.POST("/api/func/list", handler.GetFuncList, handler.Filter)
+	e.POST("/api/func/account/list", handler.GetFuncAllByIdsAndAccId, handler.Filter)
+	e.POST("/api/account/func/list", handler.GetAccountFuncList, handler.Filter)
 
 	utils.Open(global.Host)
 

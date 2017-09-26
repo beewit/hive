@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/labstack/echo"
-	"github.com/beewit/beekit/utils/convert"
 	"github.com/beewit/beekit/utils"
 	"github.com/beewit/hive/global"
 	"github.com/beewit/beekit/utils/enum"
@@ -18,7 +17,7 @@ func GetPlatformList(c echo.Context) error {
 	if len(rows) <= 0 {
 		return utils.Success(c, "无数据", nil)
 	}
-	return utils.Success(c, "获取数据成功", convert.ToArrayMapString(rows))
+	return utils.Success(c, "获取数据成功", rows)
 }
 
 func GetPlatformId(c echo.Context) error {
@@ -32,5 +31,5 @@ func GetPlatformId(c echo.Context) error {
 	if len(rows) != 1 {
 		return utils.Success(c, "无数据", nil)
 	}
-	return utils.Success(c, "获取数据成功", convert.ToMapString(rows[0]))
+	return utils.Success(c, "获取数据成功", rows[0])
 }

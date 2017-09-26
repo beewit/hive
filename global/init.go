@@ -1,13 +1,14 @@
 package global
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/beewit/beekit/conf"
 	"github.com/beewit/beekit/log"
 	"github.com/beewit/beekit/mysql"
 	"github.com/beewit/beekit/redis"
-	"fmt"
 	"github.com/beewit/beekit/utils/convert"
-	"encoding/json"
 )
 
 var (
@@ -25,16 +26,12 @@ const (
 )
 
 type Account struct {
-	ID              int64  `json:"id"`
-	Nickname        string `json:"nickname"`
-	Photo           string `json:"photo"`
-	MemberTypeId    int64  `json:"member_type_id"`
-	MemberTypeName  string `json:"member_type_name"`
-	Mobile          string `json:"mobile"`
-	MemberExpirTime string `json:"member_expir_time"`
-	Status          string `json:"status"`
+	ID       int64  `json:"id"`
+	Nickname string `json:"nickname"`
+	Photo    string `json:"photo"`
+	Mobile   string `json:"mobile"`
+	Status   string `json:"status"`
 }
-
 
 func ToByteAccount(b []byte) *Account {
 	var rp = new(Account)
