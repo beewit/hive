@@ -51,9 +51,13 @@ func GetAccountFuncList(c echo.Context) error {
 func GetFuncAllByIdsAndAccId(c echo.Context) error {
 	accID := c.FormValue("accId")
 	funcIds := c.FormValue("funcIds")
+	platformIds := c.FormValue("platformIds")
 	where := "af.expiration_time>now() AND f.status=? AND af.account_id=?"
 	if funcIds != "" {
 		where += fmt.Sprintf(" AND f.id in(%s)", funcIds)
+	}
+	if platformIds != "" {
+		where += fmt.Sprintf(" AND f.platform_id in(%s)", platformIds)
 	}
 	sql := fmt.Sprintf(
 		"SELECT f.* FROM account_func af LEFT JOIN func f ON af.func_id=f.id LEFT JOIN platform p ON p.id=f.platform_id WHERE %s",

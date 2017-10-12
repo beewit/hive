@@ -32,6 +32,9 @@ func Start() {
 	e.POST("/api/func/list", handler.GetFuncList, handler.Filter)
 	e.POST("/api/func/account/list", handler.GetFuncAllByIdsAndAccId, handler.Filter)
 	e.POST("/api/account/func/list", handler.GetAccountFuncList, handler.Filter)
+	e.POST("/api/account/updatePwd", handler.UpdatePassword, handler.Filter)
+
+	e.POST("/api/order/pay/list", handler.GetPayOrderList, handler.Filter)
 
 	utils.Open(global.Host)
 

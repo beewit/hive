@@ -49,3 +49,16 @@ func ApiPost(url string, m map[string]string) (utils.ResultParam, error) {
 	}
 	return utils.ToResultParam(body), nil
 }
+
+
+func TestUpdatePwd(t *testing.T) {
+	rp, err := ApiPost("http://127.0.0.1:8085/api/account/updatePwd?pwd=123456&pwdNew=1234567", map[string]string{"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.LEHRhrcsscya5MbirqEmsqwX8SPqFzIAqm8MU-lGJvQ"})
+	if err != nil {
+		t.Error(err.Error())
+	}
+	str, err2 := json.Marshal(rp)
+	if err2 != nil {
+		t.Error(err2.Error())
+	}
+	println(string(str))
+}
