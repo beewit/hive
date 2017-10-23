@@ -6,6 +6,7 @@ import (
 	"github.com/beewit/hive/global"
 	"github.com/beewit/beekit/utils/enum"
 	"fmt"
+	"github.com/beewit/beekit/utils/convert"
 )
 
 func GetWechatGroupList(c echo.Context) error {
@@ -36,4 +37,83 @@ func GetWechatGroupList(c echo.Context) error {
 		return utils.NullData(c)
 	}
 	return utils.Success(c, "获取数据成功", page)
+}
+
+func GetWechatGroupClass(c echo.Context) error {
+	typeMap := GetWechatGroupType()
+	areaMap := GetWechatGroupArea()
+	m := map[string]interface{}{}
+	m["area"] = areaMap
+	m["type"] = typeMap
+ return 	utils.SuccessNullMsg(c, m)
+}
+
+func GetWechatGroupType() []map[string]interface{} {
+	//缓存
+	reidsWechatGroupType := "WechatGroupType"
+	wgt, err := global.RD.GetString(reidsWechatGroupType)
+	if err != nil {
+		global.Log.Error(err.Error())
+	} else {
+		if wgt != "" {
+			redisMap, err := convert.String2MapList(wgt)
+			if err != nil {
+				global.Log.Error(err.Error())
+			} else {
+				if redisMap != nil && len(redisMap) > 0 {
+					return redisMap
+				}
+			}
+		}
+	}
+	m, err := global.DB.Query("SELECT type ,count(type) as sum FROM wechat_group GROUP BY type")
+	if err != nil {
+		global.Log.Error(err.Error())
+		return nil
+	}
+	if m != nil && len(m) > 0 {
+		val, err := convert.ToArrayMapStr(m)
+		if err != nil {
+			global.Log.Error(err.Error())
+		} else {
+			//十分钟缓存
+			global.RD.SetAndExpire(reidsWechatGroupType, val, 60*10)
+		}
+	}
+	return m
+}
+
+func GetWechatGroupArea() []map[string]interface{} {
+	//缓存
+	reidsWechatGroupArea := "WechatGroupArea"
+	wgt, err := global.RD.GetString(reidsWechatGroupArea)
+	if err != nil {
+		global.Log.Error(err.Error())
+	} else {
+		if wgt != "" {
+			redisMap, err := convert.String2MapList(wgt)
+			if err != nil {
+				global.Log.Error(err.Error())
+			} else {
+				if redisMap != nil && len(redisMap) > 0 {
+					return redisMap
+				}
+			}
+		}
+	}
+	m, err := global.DB.Query("SELECT area ,count(area) as sum FROM wechat_group GROUP BY area")
+	if err != nil {
+		global.Log.Error(err.Error())
+		return nil
+	}
+	if m != nil && len(m) > 0 {
+		val, err := convert.ToArrayMapStr(m)
+		if err != nil {
+			global.Log.Error(err.Error())
+		} else {
+			//十分钟缓存
+			global.RD.SetAndExpire(reidsWechatGroupArea, val, 60*10)
+		}
+	}
+	return m
 }

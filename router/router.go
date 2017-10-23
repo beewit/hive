@@ -15,14 +15,11 @@ import (
 
 func Start() {
 	fmt.Printf("登陆授权系统启动")
-
 	e := echo.New()
 	e.Use(middleware.Gzip())
 	e.Use(middleware.Recover())
-
 	e.Static("/app", "app")
 	e.File("/", "app/page/index.html")
-
 	e.POST("/api/template", handler.GetTemplateByListPage, handler.Filter)
 	e.POST("/api/template/update/refer/:id", handler.UpdateTemplateReferById, handler.Filter)
 	e.POST("/api/template/:id", handler.GetTemplateById, handler.Filter)
@@ -33,14 +30,10 @@ func Start() {
 	e.POST("/api/func/account/list", handler.GetFuncAllByIdsAndAccId, handler.Filter)
 	e.POST("/api/account/func/list", handler.GetAccountFuncList, handler.Filter)
 	e.POST("/api/account/updatePwd", handler.UpdatePassword, handler.Filter)
-
 	e.POST("/api/order/pay/list", handler.GetPayOrderList, handler.Filter)
-
-	e.POST("/api/wechat/group/list", handler.GetWechatGroupList)
-
+	e.POST("/api/wechat/group/list", handler.GetWechatGroupList, handler.Filter)
+	e.POST("/api/wechat/group/class", handler.GetWechatGroupClass)
 	utils.Open(global.Host)
-
 	port := ":" + convert.ToString(global.Port)
-
 	e.Logger.Fatal(e.Start(port))
 }
