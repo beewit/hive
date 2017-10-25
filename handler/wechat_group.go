@@ -10,9 +10,17 @@ import (
 )
 
 func GetWechatGroupList(c echo.Context) error {
+	itf := c.Get("account")
+	if itf == nil {
+		return utils.AuthFailNull(c)
+	}
+	acc := global.ToInterfaceAccount(itf)
+	if acc == nil {
+		return utils.AuthFailNull(c)
+	}
 	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
 	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
-	where := "status=?"
+	where := "status=? AND id NOT IN(SELECT wechat_group_id FROM account_wechat_group WHERE account_id=?)"
 	area := c.FormValue("area")
 	types := c.FormValue("type")
 	if area != "" {
@@ -29,9 +37,9 @@ func GetWechatGroupList(c echo.Context) error {
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		Order:     "ut_time DESC",
-	}, enum.NORMAL)
+	}, enum.NORMAL, acc.ID)
 	if err != nil {
-		return utils.Error(c, "数据异常，"+err.Error(), nil)
+		return utils.ErrorNull(c, "数据异常，"+err.Error())
 	}
 	if page == nil {
 		return utils.NullData(c)
@@ -45,7 +53,7 @@ func GetWechatGroupClass(c echo.Context) error {
 	m := map[string]interface{}{}
 	m["area"] = areaMap
 	m["type"] = typeMap
- return 	utils.SuccessNullMsg(c, m)
+	return utils.SuccessNullMsg(c, m)
 }
 
 func GetWechatGroupType() []map[string]interface{} {
@@ -66,7 +74,7 @@ func GetWechatGroupType() []map[string]interface{} {
 			}
 		}
 	}
-	m, err := global.DB.Query("SELECT type ,count(type) as sum FROM wechat_group GROUP BY type")
+	m, err := global.DB.Query("SELECT type ,count(type) as sum FROM wechat_group WHERE type!='' GROUP BY type")
 	if err != nil {
 		global.Log.Error(err.Error())
 		return nil
@@ -101,7 +109,7 @@ func GetWechatGroupArea() []map[string]interface{} {
 			}
 		}
 	}
-	m, err := global.DB.Query("SELECT area ,count(area) as sum FROM wechat_group GROUP BY area")
+	m, err := global.DB.Query("SELECT area ,count(area) as sum FROM wechat_group WHERE area!='' GROUP BY area")
 	if err != nil {
 		global.Log.Error(err.Error())
 		return nil
@@ -116,4 +124,42 @@ func GetWechatGroupArea() []map[string]interface{} {
 		}
 	}
 	return m
+}
+
+func AddAccountWechatGroup(c echo.Context) error {
+	itf := c.Get("account")
+	if itf == nil {
+		return utils.AuthFailNull(c)
+	}
+	acc := global.ToInterfaceAccount(itf)
+	if acc == nil {
+		return utils.AuthFailNull(c)
+	}
+	wgId := c.FormValue("wgId")
+	if !utils.IsValidNumber(wgId) {
+		utils.ErrorNull(c, "wgId格式错误")
+	}
+	if getWechatGroupByid(convert.MustInt64(wgId)) == nil {
+		utils.ErrorNull(c, "无此wgId数据")
+	}
+	iw, _ := utils.NewIdWorker(1)
+	id, _ := iw.NextId()
+	m := map[string]interface{}{}
+	m["id"] = id
+	m["account_id"] = acc.ID
+	m["wechat_group_id"] = wgId
+	m["ct_time"] = utils.CurrentTime()
+	_, err := global.DB.InsertMap("account_wechat_group", m)
+	if err != nil {
+		return utils.ErrorNull(c, "数据异常，"+err.Error())
+	}
+	return utils.SuccessNull(c, "保存数据成功")
+}
+
+func getWechatGroupByid(id int64) map[string]interface{} {
+	m, err := global.DB.Query("SELECT * FROM account_wechat_group WHERE id=? LIMIT 1", id)
+	if err != nil || len(m) != 1 {
+		return nil
+	}
+	return m[0]
 }

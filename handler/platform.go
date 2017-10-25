@@ -8,7 +8,7 @@ import (
 )
 
 func GetPlatformList(c echo.Context) error {
-	sql := `SELECT * FROM platform WHERE status = ?`
+	sql := `SELECT * FROM platform WHERE status = ? AND login_url <> ''`
 	rows, err := global.DB.Query(sql, enum.NORMAL)
 	if err != nil {
 		global.Log.Error("GetPlatformList：" + err.Error())

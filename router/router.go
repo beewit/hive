@@ -28,11 +28,16 @@ func Start() {
 	e.POST("/api/rules/list", handler.GetRules, handler.Filter)
 	e.POST("/api/func/list", handler.GetFuncList, handler.Filter)
 	e.POST("/api/func/account/list", handler.GetFuncAllByIdsAndAccId, handler.Filter)
+	e.POST("/api/func/account/funcId", handler.GetEffectiveFuncById, handler.Filter)
+
 	e.POST("/api/account/func/list", handler.GetAccountFuncList, handler.Filter)
 	e.POST("/api/account/updatePwd", handler.UpdatePassword, handler.Filter)
+	e.POST("/api/account/wechat/group/add", handler.AddAccountWechatGroup, handler.Filter)
+
 	e.POST("/api/order/pay/list", handler.GetPayOrderList, handler.Filter)
 	e.POST("/api/wechat/group/list", handler.GetWechatGroupList, handler.Filter)
-	e.POST("/api/wechat/group/class", handler.GetWechatGroupClass)
+	e.POST("/api/wechat/group/class", handler.GetWechatGroupClass, handler.Filter)
+
 	utils.Open(global.Host)
 	port := ":" + convert.ToString(global.Port)
 	e.Logger.Fatal(e.Start(port))
