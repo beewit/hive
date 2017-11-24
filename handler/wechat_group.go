@@ -142,10 +142,8 @@ func AddAccountWechatGroup(c echo.Context) error {
 	if getWechatGroupByid(convert.MustInt64(wgId)) == nil {
 		utils.ErrorNull(c, "无此wgId数据")
 	}
-	iw, _ := utils.NewIdWorker(1)
-	id, _ := iw.NextId()
 	m := map[string]interface{}{}
-	m["id"] = id
+	m["id"] = utils.ID()
 	m["account_id"] = acc.ID
 	m["wechat_group_id"] = wgId
 	m["ct_time"] = utils.CurrentTime()
