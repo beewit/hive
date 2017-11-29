@@ -97,3 +97,26 @@ func GetEffectiveFuncById(c echo.Context) error {
 	}
 	return utils.Success(c, "获取数据成功", m[0])
 }
+
+func GetFuncGroupByAccountId(c echo.Context) error {
+	itf := c.Get("account")
+	if itf == nil {
+		return utils.AuthFailNull(c)
+	}
+	acc := global.ToInterfaceAccount(itf)
+	if acc == nil {
+		return utils.AuthFailNull(c)
+	}
+	openSql := "SELECT * FROM account_func WHERE expiration_time>NOW() AND account_id=?"
+	expireSql := "SELECT * FROM account_func WHERE expiration_time<NOW() AND account_id=?"
+	notExpireSql := "SELECT * FROM account_func WHERE expiration_time>date_add(NOW(),interval 15 DAY) AND account_id=?"
+	openMap, _ := global.DB.Query(openSql, acc.ID)
+	expireMap, _ := global.DB.Query(expireSql, acc.ID)
+	notExpireMap, _ := global.DB.Query(notExpireSql, acc.ID)
+	data := map[string]interface{}{
+		"openMap":      openMap,
+		"expireMap":    expireMap,
+		"notExpireMap": notExpireMap,
+	}
+	return utils.SuccessNullMsg(c, data)
+}
