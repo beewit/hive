@@ -35,6 +35,9 @@ func Filter(next echo.HandlerFunc) echo.HandlerFunc {
 			token = bm["token"]
 		}
 		if token == "" {
+			token = c.FormValue("token")
+		}
+		if token == "" {
 			return utils.AuthFail(c, "登陆信息token无效，请重新登陆")
 		}
 
