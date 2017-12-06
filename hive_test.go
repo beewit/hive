@@ -6,6 +6,11 @@ import (
 	"github.com/beewit/hive/global"
 	"github.com/beewit/beekit/utils/uhttp"
 	"github.com/beewit/beekit/utils"
+	"github.com/beewit/wechat-ai/smartWechat"
+	"fmt"
+	"time"
+	"net/http"
+	"io/ioutil"
 )
 
 func TestRedis(t *testing.T) {
@@ -50,7 +55,6 @@ func ApiPost(url string, m map[string]string) (utils.ResultParam, error) {
 	return utils.ToResultParam(body), nil
 }
 
-
 func TestUpdatePwd(t *testing.T) {
 	rp, err := ApiPost("http://127.0.0.1:8085/api/account/updatePwd?pwd=123456&pwdNew=1234567", map[string]string{"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.LEHRhrcsscya5MbirqEmsqwX8SPqFzIAqm8MU-lGJvQ"})
 	if err != nil {
@@ -61,4 +65,29 @@ func TestUpdatePwd(t *testing.T) {
 		t.Error(err2.Error())
 	}
 	println(string(str))
+}
+
+func TestGetUrlPars(t *testing.T) {
+	s := smartWechat.GetURLParams(map[string]string{
+		"234": "iii",
+		"456": "32r"})
+	println(s)
+}
+
+func TestTime(t *testing.T) {
+	println(fmt.Sprintf("%d", time.Now().Unix()))
+}
+
+func TestImg(t *testing.T) {
+	rep, err := http.Get("http://sso.9ee3.com/img/code")
+	if err != nil {
+		println(err.Error())
+		return
+	}
+	_, err = ioutil.ReadAll(rep.Body)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+	println("可怜")
 }

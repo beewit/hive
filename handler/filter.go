@@ -30,12 +30,12 @@ func readBody(c echo.Context) (map[string]string, error) {
 func Filter(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var token string
-		bm, _ := readBody(c)
-		if bm != nil {
-			token = bm["token"]
-		}
+		token = c.FormValue("token")
 		if token == "" {
-			token = c.FormValue("token")
+			bm, _ := readBody(c)
+			if bm != nil {
+				token = bm["token"]
+			}
 		}
 		if token == "" {
 			return utils.AuthFail(c, "登陆信息token无效，请重新登陆")

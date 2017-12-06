@@ -60,7 +60,7 @@ func GetFuncAllByIdsAndAccId(c echo.Context) error {
 		where += fmt.Sprintf(" AND f.platform_id in(%s)", platformIds)
 	}
 	sql := fmt.Sprintf(
-		"SELECT f.* FROM account_func af LEFT JOIN func f ON af.func_id=f.id LEFT JOIN platform p ON p.id=f.platform_id WHERE %s",
+		"SELECT f.*,af.expiration_time FROM account_func af LEFT JOIN func f ON af.func_id=f.id LEFT JOIN platform p ON p.id=f.platform_id WHERE %s",
 		where)
 	m, err := global.DB.Query(sql, enum.NORMAL, accID)
 	if err != nil {
@@ -85,7 +85,7 @@ func GetEffectiveFuncById(c echo.Context) error {
 	if !utils.IsValidNumber(funcId) {
 		return utils.ErrorNull(c, "funcId参数错误")
 	}
-	sql := "SELECT f.* FROM account_func af LEFT JOIN func f ON af.func_id=f.id " +
+	sql := "SELECT f.*,af.expiration_time FROM account_func af LEFT JOIN func f ON af.func_id=f.id " +
 		"LEFT JOIN platform p ON p.id=f.platform_id " +
 		"WHERE af.expiration_time>now() AND f.status=? AND af.account_id=? AND f.id=? LIMIT 1"
 	m, err := global.DB.Query(sql, enum.NORMAL, acc.ID, funcId)
@@ -96,6 +96,28 @@ func GetEffectiveFuncById(c echo.Context) error {
 		return utils.NullData(c)
 	}
 	return utils.Success(c, "获取数据成功", m[0])
+}
+
+func GetEffectiveFuncList(c echo.Context) error {
+	itf := c.Get("account")
+	if itf == nil {
+		return utils.AuthFailNull(c)
+	}
+	acc := global.ToInterfaceAccount(itf)
+	if acc == nil {
+		return utils.AuthFailNull(c)
+	}
+	sql := "SELECT f.*,af.expiration_time FROM account_func af LEFT JOIN func f ON af.func_id=f.id " +
+		"LEFT JOIN platform p ON p.id=f.platform_id " +
+		"WHERE af.expiration_time>now() AND f.status=? AND af.account_id=? "
+	m, err := global.DB.Query(sql, enum.NORMAL, acc.ID)
+	if err != nil {
+		return utils.Error(c, "数据异常，"+err.Error(), nil)
+	}
+	if len(m) <= 0 {
+		return utils.NullData(c)
+	}
+	return utils.Success(c, "获取数据成功", m)
 }
 
 func GetFuncGroupByAccountId(c echo.Context) error {

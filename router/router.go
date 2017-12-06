@@ -29,6 +29,7 @@ func Start() {
 	e.POST("/api/func/list", handler.GetFuncList, handler.Filter)
 	e.POST("/api/func/account/list", handler.GetFuncAllByIdsAndAccId, handler.Filter)
 	e.POST("/api/func/account/funcId", handler.GetEffectiveFuncById, handler.Filter)
+	e.POST("/api/func/account/funcList", handler.GetEffectiveFuncList, handler.Filter)
 	e.POST("/api/func/account/group", handler.GetFuncGroupByAccountId, handler.Filter)
 
 	e.POST("/api/account/func/list", handler.GetAccountFuncList, handler.Filter)
