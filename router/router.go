@@ -32,9 +32,11 @@ func Start() {
 	e.POST("/api/func/account/funcList", handler.GetEffectiveFuncList, handler.Filter)
 	e.POST("/api/func/account/group", handler.GetFuncGroupByAccountId, handler.Filter)
 
+	e.POST("/api/account/auths", handler.GetAccountAuths, handler.Filter)
 	e.POST("/api/account/func/list", handler.GetAccountFuncList, handler.Filter)
 	e.POST("/api/account/updatePwd", handler.UpdatePassword, handler.Filter)
 	e.POST("/api/account/wechat/group/add", handler.AddAccountWechatGroup, handler.Filter)
+	e.POST("/api/account/action/log/add", handler.AddActionLogs, handler.Filter)
 
 	e.POST("/api/order/pay/list", handler.GetPayOrderList, handler.Filter)
 	e.POST("/api/wechat/group/list", handler.GetWechatGroupList, handler.Filter)

@@ -43,3 +43,29 @@ func UpdatePassword(c echo.Context) error {
 		return utils.Error(c, "修改密码失败", nil)
 	}
 }
+
+func GetAccountAuths(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
+	sql := `SELECT * FROM account_auths WHERE account_id = ?`
+	rows, _ := global.DB.Query(sql, acc.ID)
+	return utils.SuccessNullMsg(c, rows)
+}
+
+func AddActionLogs(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
+	t := c.FormValue("action")
+	if t == "" {
+		return utils.ErrorNull(c, "无有效的功能行为记录分类")
+	}
+	_, err = global.DB.InsertMap("account_action_logs", utils.ActionLogs(c, t, acc.ID))
+	if err != nil {
+		return utils.ErrorNull(c, err.Error())
+	}
+	return utils.SuccessNull(c,"success")
+}
