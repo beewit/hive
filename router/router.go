@@ -41,6 +41,8 @@ func Start() {
 	e.POST("/api/order/pay/list", handler.GetPayOrderList, handler.Filter)
 	e.POST("/api/wechat/group/list", handler.GetWechatGroupList, handler.Filter)
 	e.POST("/api/wechat/group/class", handler.GetWechatGroupClass, handler.Filter)
+
+	e.POST("/api/add/system/log", handler.AddSystemLog)
 	utils.Open(global.Host)
 	port := ":" + convert.ToString(global.Port)
 	e.Logger.Fatal(e.Start(port))
