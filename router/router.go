@@ -31,6 +31,7 @@ func Start() {
 	e.POST("/api/func/account/funcId", handler.GetEffectiveFuncById, handler.Filter)
 	e.POST("/api/func/account/funcList", handler.GetEffectiveFuncList, handler.Filter)
 	e.POST("/api/func/account/group", handler.GetFuncGroupByAccountId, handler.Filter)
+	e.POST("/api/func/account/share/wechat/app/add", handler.AddShareWechatAppTime, handler.Filter)
 
 	e.POST("/api/account/auths", handler.GetAccountAuths, handler.Filter)
 	e.POST("/api/account/func/list", handler.GetAccountFuncList, handler.Filter)
