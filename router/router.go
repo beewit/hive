@@ -38,6 +38,8 @@ func Start() {
 	e.POST("/api/account/updatePwd", handler.UpdatePassword, handler.Filter)
 	e.POST("/api/account/wechat/group/add", handler.AddAccountWechatGroup, handler.Filter)
 	e.POST("/api/account/action/log/add", handler.AddActionLogs, handler.Filter)
+	e.POST("/api/account/identity/auth/add", handler.AddIdentityAuth, handler.Filter)
+	e.POST("/api/account/identity/auth/get", handler.GetIndetityAuth, handler.Filter)
 
 	e.POST("/api/order/pay/list", handler.GetPayOrderList, handler.Filter)
 	e.POST("/api/wechat/group/list", handler.GetWechatGroupList, handler.Filter)
