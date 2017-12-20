@@ -8,7 +8,10 @@ import (
 )
 
 func GetPayOrderList(c echo.Context) error {
-	accID := c.FormValue("accId")
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
 	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
 	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
 	page, err := global.DB.QueryPage(&utils.PageTable{
@@ -17,7 +20,7 @@ func GetPayOrderList(c echo.Context) error {
 		Where:     "o.status=? AND o.pay_status=? AND o.account_id=?",
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
-	}, enum.NORMAL, enum.PAY_STATUS_END, accID)
+	}, enum.NORMAL, enum.PAY_STATUS_END, acc.ID)
 	if err != nil {
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
 	}

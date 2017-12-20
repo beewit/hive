@@ -11,6 +11,7 @@ import (
 	"time"
 	"net/http"
 	"io/ioutil"
+	"math"
 )
 
 func TestRedis(t *testing.T) {
@@ -76,6 +77,9 @@ func TestGetUrlPars(t *testing.T) {
 
 func TestTime(t *testing.T) {
 	println(fmt.Sprintf("%d", time.Now().Unix()))
+}
+func TestPageNumber(t *testing.T) {
+	println(fmt.Sprintf("%v",  int(math.Ceil(float64(10)/float64(4)))))
 }
 
 func TestImg(t *testing.T) {

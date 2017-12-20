@@ -11,7 +11,10 @@ import (
 )
 
 func GetFuncList(c echo.Context) error {
-	accID := c.FormValue("accId")
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
 	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
 	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
 	page, err := global.DB.QueryPage(&utils.PageTable{
@@ -20,7 +23,7 @@ func GetFuncList(c echo.Context) error {
 		Where:     "f.status=?",
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
-	}, accID, enum.NORMAL)
+	}, acc.ID, enum.NORMAL)
 	if err != nil {
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
 	}
@@ -31,7 +34,10 @@ func GetFuncList(c echo.Context) error {
 }
 
 func GetAccountFuncList(c echo.Context) error {
-	accID := c.FormValue("accId")
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
 	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
 	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
 	page, err := global.DB.QueryPage(&utils.PageTable{
@@ -40,7 +46,31 @@ func GetAccountFuncList(c echo.Context) error {
 		Where:     "f.status=? AND af.account_id=?",
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
-	}, enum.NORMAL, accID)
+	}, enum.NORMAL, acc.ID)
+	if err != nil {
+		return utils.Error(c, "数据异常，"+err.Error(), nil)
+	}
+	if page == nil {
+		return utils.NullData(c)
+	}
+	return utils.Success(c, "获取数据成功", page)
+}
+
+func GetFuncGiveLog(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
+	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
+	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
+	page, err := global.DB.QueryPage(&utils.PageTable{
+		Fields:    "log.*,f.name",
+		Table:     "account_func_give_log log LEFT JOIN func f ON log.func_id=f.id",
+		Where:     "log.account_id=?",
+		PageIndex: pageIndex,
+		PageSize:  pageSize,
+		Order:     "log.ct_time DESC",
+	},  acc.ID)
 	if err != nil {
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
 	}

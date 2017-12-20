@@ -10,6 +10,30 @@ import (
 	"fmt"
 )
 
+func GetShareAccountList(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
+	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
+	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
+	page, err := global.DB.QueryPage(&utils.PageTable{
+		Fields:    "*",
+		Table:     "v_account",
+		Where:     "status=? AND shareAccountId=?",
+		PageIndex: pageIndex,
+		PageSize:  pageSize,
+		Order:     "ct_time DESC",
+	}, enum.NORMAL, acc.ID)
+	if err != nil {
+		return utils.Error(c, "数据异常，"+err.Error(), nil)
+	}
+	if page == nil {
+		return utils.NullData(c)
+	}
+	return utils.Success(c, "获取数据成功", page)
+}
+
 func UpdatePassword(c echo.Context) error {
 	pwd := c.FormValue("pwd")
 	pwdNew := c.FormValue("pwdNew")
