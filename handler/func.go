@@ -204,7 +204,7 @@ func AddShareWechatAppTime(c echo.Context) error {
 	if m == nil {
 		return utils.ErrorNull(c, "查询使用次数失败")
 	}
-	hour := 24
+	hour := 8
 	sum := convert.MustInt(m[0]["sum"])
 	if sum >= 5 {
 		//判断是否今日赠送过了时间，如果已经赠送不再赠送了

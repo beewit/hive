@@ -34,6 +34,13 @@ func GetShareAccountList(c echo.Context) error {
 	return utils.Success(c, "获取数据成功", page)
 }
 
+func GetAppSetting(c echo.Context) error {
+	advertList, _ := GetAdvertList("")
+	return utils.SuccessNullMsg(c, map[string]interface{}{
+		"advert": advertList,
+	})
+}
+
 func UpdatePassword(c echo.Context) error {
 	pwd := c.FormValue("pwd")
 	pwdNew := c.FormValue("pwdNew")

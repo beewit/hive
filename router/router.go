@@ -42,6 +42,7 @@ func Start() {
 	e.POST("/api/account/identity/auth/get", handler.GetIndetityAuth, handler.Filter)
 	e.POST("/api/account/func/give/log", handler.GetFuncGiveLog, handler.Filter)
 	e.POST("/api/account/share/account/list", handler.GetShareAccountList, handler.Filter)
+	e.POST("/api/app/setting", handler.GetAppSetting, handler.Filter)
 
 	e.POST("/api/order/pay/list", handler.GetPayOrderList, handler.Filter)
 	e.POST("/api/wechat/group/list", handler.GetWechatGroupList, handler.Filter)
