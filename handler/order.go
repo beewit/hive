@@ -20,6 +20,7 @@ func GetPayOrderList(c echo.Context) error {
 		Where:     "o.status=? AND o.pay_status=? AND o.account_id=?",
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
+		Order:     "pay_time DESC",
 	}, enum.NORMAL, enum.PAY_STATUS_END, acc.ID)
 	if err != nil {
 		return utils.Error(c, "数据异常，"+err.Error(), nil)

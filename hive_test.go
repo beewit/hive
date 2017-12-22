@@ -78,8 +78,12 @@ func TestGetUrlPars(t *testing.T) {
 func TestTime(t *testing.T) {
 	println(fmt.Sprintf("%d", time.Now().Unix()))
 }
+
+func TestFlost(t *testing.T) {
+	println(fmt.Sprintf("%.2f", 12.369))
+}
 func TestPageNumber(t *testing.T) {
-	println(fmt.Sprintf("%v",  int(math.Ceil(float64(10)/float64(4)))))
+	println(fmt.Sprintf("%v", int(math.Ceil(float64(10)/float64(4)))))
 }
 
 func TestImg(t *testing.T) {
@@ -95,5 +99,3 @@ func TestImg(t *testing.T) {
 	}
 	println("可怜")
 }
-
-

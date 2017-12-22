@@ -10,6 +10,182 @@ import (
 	"fmt"
 )
 
+func GetWallet(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
+	m := getWallet(acc)
+	if m == nil {
+		//初始化钱包
+		m = map[string]interface{}{}
+		m["id"] = utils.ID()
+		m["account_id"] = acc.ID
+		m["money"] = 0
+		m["ct_time"] = utils.CurrentTime()
+		m["ct_ip"] = c.RealIP()
+		_, err := global.DB.InsertMap("account_wallet", m)
+		if err != nil {
+			global.Log.Error("初始化钱包失败，ERROR：", err.Error())
+		}
+	}
+	return utils.SuccessNullMsg(c, map[string]interface{}{
+		"wallet":                 m,
+		"unWithdrawCashMoney":    getUnWithdrawCashMoney(acc),
+		"applyWithdrawCashMoney": getApplyWithdrawCashMoney(acc),
+	})
+}
+
+func getWallet(acc *global.Account) map[string]interface{} {
+	sql := "SELECT * FROM account_wallet WHERE account_id=? LIMIT 1"
+	rows, _ := global.DB.Query(sql, acc.ID)
+	if rows == nil || len(rows) != 1 {
+		return nil
+	}
+	return rows[0]
+}
+
+/**
+	不能提现的金额，邀请返利获得的奖励金额需要一个月后才可申请提现
+ */
+func getUnWithdrawCashMoney(acc *global.Account) float64 {
+	sql := "SELECT sum(change_money) as money FROM account_wallet_log WHERE DATE_SUB(CURDATE(), INTERVAL 1 MONTH) <= date(ct_time) AND account_id=? AND type=?"
+	rows, _ := global.DB.Query(sql, acc.ID, enum.WALLET_REBATE)
+	if rows == nil || len(rows) != 1 {
+		return 0
+	}
+	return convert.MustFloat64(rows[0]["money"])
+}
+
+func AddWithdrawCashCard(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
+	cp := c.FormValue("collectPlatform")
+	cn := c.FormValue("cardNumber")
+	cq := c.FormValue("cardQrcode")
+	if cp == "" {
+		return utils.ErrorNull(c, "请选择提现的收款第三方平台")
+	}
+	if cn == "" {
+		return utils.ErrorNull(c, "请输入第三方平台的账号")
+	}
+	if cq == "" {
+		return utils.ErrorNull(c, "请上传收款二维码")
+	}
+	sql := "REPLACE INTO account_wallet(id,account_id,wc_collect_platform,wc_card_number,wc_card_qrcode,last_time,last_ip)VALUES(?,?,?,?,?,?,?)"
+	_, err = global.DB.Insert(sql, utils.ID(), acc.ID, cp, cn, cq, utils.CurrentTime(), c.RealIP())
+	if err != nil {
+		tip := "保存提现的收款信息失败"
+		global.Log.Error(fmt.Sprintf("%s，错误：%s", tip, err.Error()))
+		return utils.ErrorNull(c, tip)
+	}
+	return utils.SuccessNull(c, "保存成功")
+}
+
+func GetWalletLogList(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
+	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
+	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
+	page, err := global.DB.QueryPage(&utils.PageTable{
+		Fields:    "*",
+		Table:     "account_wallet_log",
+		Where:     "account_id=?",
+		PageIndex: pageIndex,
+		PageSize:  pageSize,
+		Order:     "ct_time DESC",
+	}, acc.ID)
+	if err != nil {
+		return utils.Error(c, "数据异常，"+err.Error(), nil)
+	}
+	if page == nil {
+		return utils.NullData(c)
+	}
+	return utils.Success(c, "获取数据成功", page)
+}
+
+func ApplyWithdrawCash(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
+	applyMoney := c.FormValue("applyMoney")
+	if applyMoney == "" {
+		return utils.ErrorNull(c, "请输入提现金额")
+	}
+	am := convert.MustFloat64(applyMoney)
+	if am <= 0 {
+		return utils.ErrorNull(c, "请输入提现金额")
+	}
+	m := getWallet(acc)
+	if m == nil {
+		return utils.ErrorNull(c, "金额已超过可提现金额")
+	}
+	walletMoney := convert.MustFloat64(m["money"])
+	//邀请返利，需要一个月后才可提现
+	unWithdrawCash := getUnWithdrawCashMoney(acc)
+	applyWithdrawCash := getApplyWithdrawCashMoney(acc)
+	if am > walletMoney-unWithdrawCash-applyWithdrawCash {
+		return utils.ErrorNull(c, fmt.Sprintf("金额已超过可提现金额，申请中的金额：%.2f，不能提现的金额：%.2f", applyWithdrawCash, unWithdrawCash))
+	}
+	applyMap := map[string]interface{}{}
+	applyMap["id"] = utils.ID()
+	applyMap["account_id"] = acc.ID
+	applyMap["apply_money"] = am
+	applyMap["collect_platform"] = m["wc_collect_platform"]
+	applyMap["card_number"] = m["wc_card_number"]
+	applyMap["card_qrcode"] = m["wc_card_qrcode"]
+	applyMap["ct_time"] = utils.CurrentTime()
+	applyMap["last_time"] = applyMap["ct_time"]
+	applyMap["ct_ip"] = c.RealIP()
+	applyMap["status"] = enum.REVIEW_NO
+	_, err = global.DB.InsertMap("account_apply_withdraw_cash", applyMap)
+	if err != nil {
+		return utils.ErrorNull(c, "申请提现失败")
+	}
+	return utils.SuccessNull(c, "申请提现成功")
+}
+
+/**
+	申请提现正在审核的金额
+ */
+func getApplyWithdrawCashMoney(acc *global.Account) float64 {
+	sql := "SELECT sum(apply_money) as applyMoney FROM account_apply_withdraw_cash WHERE `status`=? AND account_id=?"
+	rows, _ := global.DB.Query(sql, acc.ID, enum.REVIEW_NO)
+	if rows == nil || len(rows) != 1 {
+		return 0
+	}
+	return convert.MustFloat64(rows[0]["applyMoney"])
+}
+
+func GetApplyWithdrawCashList(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
+	}
+	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
+	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
+	page, err := global.DB.QueryPage(&utils.PageTable{
+		Fields:    "*",
+		Table:     "account_apply_withdraw_cash",
+		Where:     "account_id=?",
+		PageIndex: pageIndex,
+		PageSize:  pageSize,
+		Order:     "last_time DESC",
+	}, acc.ID)
+	if err != nil {
+		return utils.Error(c, "数据异常，"+err.Error(), nil)
+	}
+	if page == nil {
+		return utils.NullData(c)
+	}
+	return utils.Success(c, "获取数据成功", page)
+}
+
 func GetShareAccountList(c echo.Context) error {
 	acc, err := GetAccount(c)
 	if err != nil {
@@ -44,13 +220,9 @@ func GetAppSetting(c echo.Context) error {
 func UpdatePassword(c echo.Context) error {
 	pwd := c.FormValue("pwd")
 	pwdNew := c.FormValue("pwdNew")
-	itf := c.Get("account")
-	if itf == nil {
-		return utils.AuthFailNull(c)
-	}
-	acc := global.ToInterfaceAccount(itf)
-	if acc == nil {
-		return utils.AuthFailNull(c)
+	acc, err := GetAccount(c)
+	if err != nil {
+		return err
 	}
 	sql := `SELECT id, password,salt FROM account WHERE id = ? AND status = ?`
 	rows, _ := global.DB.Query(sql, acc.ID, enum.NORMAL)
