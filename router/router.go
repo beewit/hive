@@ -39,7 +39,7 @@ func Start() {
 	e.POST("/api/account/wechat/group/add", handler.AddAccountWechatGroup, handler.Filter)
 	e.POST("/api/account/action/log/add", handler.AddActionLogs, handler.Filter)
 	e.POST("/api/account/identity/auth/add", handler.AddIdentityAuth, handler.Filter)
-	e.POST("/api/account/identity/auth/get", handler.GetIndetityAuth, handler.Filter)
+	e.POST("/api/account/identity/auth/get", handler.GetIdentityAuth, handler.Filter)
 	e.POST("/api/account/func/give/log", handler.GetFuncGiveLog, handler.Filter)
 	e.POST("/api/account/share/account/list", handler.GetShareAccountList, handler.Filter)
 	e.POST("/api/app/setting", handler.GetAppSetting, handler.Filter)
@@ -55,6 +55,7 @@ func Start() {
 	e.POST("/api/wechat/group/class", handler.GetWechatGroupClass, handler.Filter)
 
 	e.POST("/api/add/system/log", handler.AddSystemLog)
+
 	utils.Open(global.Host)
 	port := ":" + convert.ToString(global.Port)
 	e.Logger.Fatal(e.Start(port))

@@ -12,6 +12,10 @@ func GetPayOrderList(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	payStatus := c.FormValue("payStatus")
+	if payStatus == "" {
+		payStatus = enum.PAY_STATUS_END
+	}
 	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
 	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
 	page, err := global.DB.QueryPage(&utils.PageTable{
@@ -21,7 +25,7 @@ func GetPayOrderList(c echo.Context) error {
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		Order:     "pay_time DESC",
-	}, enum.NORMAL, enum.PAY_STATUS_END, acc.ID)
+	}, enum.NORMAL, payStatus, acc.ID)
 	if err != nil {
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
 	}

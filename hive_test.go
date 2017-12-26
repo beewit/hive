@@ -79,8 +79,8 @@ func TestTime(t *testing.T) {
 	println(fmt.Sprintf("%d", time.Now().Unix()))
 }
 
-func TestFlost(t *testing.T) {
-	println(fmt.Sprintf("%.2f", 12.369))
+func TestFloat(t *testing.T) {
+	println(fmt.Sprintf("%v",utils.IsValidNumber("12.6")))
 }
 func TestPageNumber(t *testing.T) {
 	println(fmt.Sprintf("%v", int(math.Ceil(float64(10)/float64(4)))))
