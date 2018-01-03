@@ -42,7 +42,7 @@ func Start() {
 	e.POST("/api/account/identity/auth/get", handler.GetIdentityAuth, handler.Filter)
 	e.POST("/api/account/func/give/log", handler.GetFuncGiveLog, handler.Filter)
 	e.POST("/api/account/share/account/list", handler.GetShareAccountList, handler.Filter)
-	e.POST("/api/app/setting", handler.GetAppSetting, handler.Filter)
+	e.POST("/api/app/setting", handler.GetAppSetting)
 
 	e.POST("/api/account/wallet", handler.GetWallet, handler.Filter)
 	e.POST("/api/account/withdrawCash/card/add", handler.AddWithdrawCashCard, handler.Filter)
