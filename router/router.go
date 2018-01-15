@@ -20,6 +20,8 @@ func Start() {
 	e.Use(middleware.Recover())
 	e.Static("/app", "app")
 	e.File("/", "app/page/index.html")
+	e.File("/.well-known/pki-validation/fileauth.txt", "app/fileauth.txt")
+	e.File("8VHBgcXdwx.txt", "8VHBgcXdwx.txt")
 	e.POST("/api/template", handler.GetTemplateByListPage, handler.Filter)
 	e.POST("/api/template/update/refer/:id", handler.UpdateTemplateReferById, handler.Filter)
 	e.POST("/api/template/:id", handler.GetTemplateById, handler.Filter)
@@ -55,6 +57,17 @@ func Start() {
 	e.POST("/api/wechat/group/class", handler.GetWechatGroupClass, handler.Filter)
 
 	e.POST("/api/add/system/log", handler.AddSystemLog)
+
+	//小程序
+	//代金券
+	e.POST("/api/account/coupon/add", handler.AddCoupon, handler.Filter)
+	e.POST("/api/account/coupon/list", handler.GetCouponList, handler.Filter)
+	e.POST("/api/account/coupon/get", handler.GetCouponByID, handler.Filter)
+	e.POST("/api/account/receive/coupon", handler.ReceiveCoupon, handler.Filter)
+	e.POST("/api/account/receive/coupon/list", handler.GetReceiveCouponList, handler.Filter)
+	//红包
+
+	//
 
 	utils.Open(global.Host)
 	port := ":" + convert.ToString(global.Port)

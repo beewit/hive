@@ -1,20 +1,20 @@
 package handler
 
 import (
-	"github.com/labstack/echo"
-	"github.com/beewit/beekit/utils"
-	"github.com/beewit/hive/global"
-	"github.com/beewit/beekit/utils/encrypt"
-	"github.com/beewit/beekit/utils/convert"
-	"github.com/beewit/beekit/utils/enum"
 	"fmt"
 	"github.com/beewit/beekit/mysql"
+	"github.com/beewit/beekit/utils"
+	"github.com/beewit/beekit/utils/convert"
+	"github.com/beewit/beekit/utils/encrypt"
+	"github.com/beewit/beekit/utils/enum"
+	"github.com/beewit/hive/global"
+	"github.com/labstack/echo"
 )
 
 func GetWallet(c echo.Context) error {
 	acc, err := GetAccount(c)
 	if err != nil {
-		return err
+		return utils.AuthFailNull(c)
 	}
 	m := getWallet(acc)
 	if m == nil {
@@ -47,8 +47,8 @@ func getWallet(acc *global.Account) map[string]interface{} {
 }
 
 /**
-	不能提现的金额，邀请返利获得的奖励金额需要一个月后才可申请提现
- */
+不能提现的金额，邀请返利获得的奖励金额需要一个月后才可申请提现
+*/
 func getUnWithdrawCashMoney(acc *global.Account) float64 {
 	sql := "SELECT sum(change_money) as money FROM account_wallet_log WHERE DATE_SUB(CURDATE(), INTERVAL 1 MONTH) <= date(ct_time) AND account_id=? AND type=?"
 	rows, _ := global.DB.Query(sql, acc.ID, enum.WALLET_REBATE)
@@ -191,8 +191,8 @@ func ApplyWithdrawCash(c echo.Context) error {
 }
 
 /**
-	申请提现正在审核的金额
- */
+申请提现正在审核的金额
+*/
 func getApplyWithdrawCashMoney(acc *global.Account) float64 {
 	sql := "SELECT sum(apply_money) as applyMoney FROM account_apply_withdraw_cash WHERE `status`=? AND account_id=?"
 	rows, _ := global.DB.Query(sql, enum.REVIEW_NO, acc.ID)
@@ -384,4 +384,18 @@ func getIdentityAuth(acc *global.Account) map[string]interface{} {
 		return nil
 	}
 	return rows[0]
+}
+
+func GetAccountById(id int64) map[string]interface{} {
+	sql := `SELECT * FROM account WHERE id = ? AND status = ? LIMIT 1`
+	rows, err := global.DB.Query(sql, id, enum.NORMAL)
+	if err != nil {
+		global.Log.Error(fmt.Sprintf("GetAccountById sql ERROR：%s", err.Error()))
+		return nil
+	}
+	if len(rows) != 1 {
+		return nil
+	}
+	return rows[0]
+
 }

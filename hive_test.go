@@ -1,17 +1,17 @@
 package main
 
 import (
-	"testing"
 	"encoding/json"
-	"github.com/beewit/hive/global"
-	"github.com/beewit/beekit/utils/uhttp"
-	"github.com/beewit/beekit/utils"
-	"github.com/beewit/wechat-ai/smartWechat"
 	"fmt"
-	"time"
-	"net/http"
+	"github.com/beewit/beekit/utils"
+	"github.com/beewit/beekit/utils/uhttp"
+	"github.com/beewit/hive/global"
+	"github.com/beewit/wechat-ai/smartWechat"
 	"io/ioutil"
 	"math"
+	"net/http"
+	"testing"
+	"time"
 )
 
 func TestRedis(t *testing.T) {
@@ -77,10 +77,14 @@ func TestGetUrlPars(t *testing.T) {
 
 func TestTime(t *testing.T) {
 	println(fmt.Sprintf("%d", time.Now().Unix()))
+	_, err := time.Parse("01-02-2006", "02-08-2015")
+	if err != nil {
+		t.Error(err.Error())
+	}
 }
 
 func TestFloat(t *testing.T) {
-	println(fmt.Sprintf("%v",utils.IsValidNumber("12.6")))
+	println(fmt.Sprintf("%v", utils.IsValidNumber("12.6")))
 }
 func TestPageNumber(t *testing.T) {
 	println(fmt.Sprintf("%v", int(math.Ceil(float64(10)/float64(4)))))
