@@ -65,12 +65,14 @@ func Start() {
 	e.POST("/api/account/coupon/delete", handler.DeleteCoupon, handler.Filter)
 	//发送代金券列表
 	e.POST("/api/account/coupon/list", handler.GetCouponList, handler.Filter)
+	e.POST("/api/account/coupon/use/num", handler.GetUseCouponNum, handler.Filter)
 	//代金券详情
 	e.POST("/api/account/coupon/get", handler.GetCouponByID, handler.Filter)
 	//红包
 	e.POST("/api/account/redpacket", handler.GetRedPacketById)
 	//发红包
 	e.POST("/api/account/send/redpacket", handler.SendRedPacket, handler.Filter)
+	e.POST("/api/account/send/redpacket/sumprice", handler.GetSendRedPacketSumPrice, handler.Filter)
 	//发红包记录
 	e.POST("/api/account/send/redpacket/list", handler.GetSendRedPacketList, handler.Filter)
 
@@ -80,6 +82,7 @@ func Start() {
 	//[小程序非系统账号也可访问，根据小程序用户标识]
 	//领取代金券
 	e.POST("/api/account/receive/coupon", handler.ReceiveCoupon)
+	e.POST("/api/account/receive/coupon/qrcode", handler.CreateCouponQrCode)
 	//红包的领取记录和领取代金券记录
 	e.POST("/api/account/redpacket/receive/coupon/record", handler.GetReceiveRedPacketAndCouponList)
 	//领取的红包记录

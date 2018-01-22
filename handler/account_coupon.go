@@ -26,6 +26,21 @@ func AddCoupon(c echo.Context) error {
 	expireTime := strings.TrimSpace(c.FormValue("expireTime"))
 	number := strings.TrimSpace(c.FormValue("number"))
 	desc := strings.TrimSpace(c.FormValue("desc"))
+	name := strings.TrimSpace(c.FormValue("name"))
+	photo := strings.TrimSpace(c.FormValue("photo"))
+	if name == "" {
+		return utils.ErrorNull(c, "请填写商家名称")
+	}
+	if len(name) > 50 {
+		return utils.ErrorNull(c, "商家名称，最长不超过500字")
+	}
+	if photo == "" {
+		return utils.ErrorNull(c, "请上传发代金券的商家Logo")
+	}
+	if photo != "" && len(photo) > 255 {
+		return utils.ErrorNull(c, "商户Logo地址错误")
+	}
+
 	if money == "" || !utils.IsValidNumber(money) {
 		return utils.ErrorNull(c, "请正确填写代金券抵扣金额")
 	}
@@ -224,4 +239,25 @@ func DeleteCoupon(c echo.Context) error {
 		return utils.ErrorNull(c, "删除代金券失败")
 	}
 	return utils.ErrorNull(c, "删除代金券成功")
+}
+
+//代金券使用次数
+func GetUseCouponNum(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return utils.AuthFailNull(c)
+	}
+	rows, err := global.DB.Query("SELECT count(1) as num FROM v_account_receive_coupon WHERE account_id=? AND receiveStatus=?", acc.ID, enum.COUPON_USE)
+	if err != nil {
+		global.Log.Error("v_account_receive_coupon sql error:%s", err.Error())
+		return utils.ErrorNull(c, "数据异常，"+err.Error())
+	}
+	if len(rows) != 1 {
+		return utils.SuccessNullMsg(c, 0)
+	}
+	num := convert.MustInt64(rows[0]["num"])
+	if convert.MustInt64(rows[0]["num"]) <= 0 {
+		return utils.SuccessNullMsg(c, 0)
+	}
+	return utils.SuccessNullMsg(c, num)
 }

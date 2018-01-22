@@ -181,3 +181,25 @@ func GetSendRedPacketList(c echo.Context) error {
 	}
 	return utils.Success(c, "获取数据成功", page)
 }
+
+
+//发红包总金额
+func GetSendRedPacketSumPrice(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return utils.AuthFailNull(c)
+	}
+	rows, err := global.DB.Query("SELECT sum(money) as sumMoney FROM account_send_red_packet WHERE account_id=? AND pay_state=?", acc.ID, enum.PAY_STATUS_END)
+	if err != nil {
+		global.Log.Error("account_send_red_packet sql error:%s", err.Error())
+		return utils.ErrorNull(c, "数据异常，"+err.Error())
+	}
+	if len(rows) != 1 {
+		return utils.SuccessNullMsg(c, 0)
+	}
+	num := convert.MustInt64(rows[0]["sumMoney"])
+	if convert.MustInt64(rows[0]["sumMoney"]) <= 0 {
+		return utils.SuccessNullMsg(c, 0)
+	}
+	return utils.SuccessNullMsg(c, num)
+}
