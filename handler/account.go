@@ -399,3 +399,16 @@ func GetAccountById(id int64) map[string]interface{} {
 	return rows[0]
 
 }
+
+func GetAccountByUnionId(unionId, t string) map[string]interface{} {
+	sql := `SELECT a.* FROM account_auths aa LEFT JOIN account a ON aa.account_id=a.id WHERE aa.unionID = ? AND aa.type=? LIMIT 1`
+	rows, err := global.DB.Query(sql, unionId, t)
+	if err != nil {
+		global.Log.Error(fmt.Sprintf("GetAccountByWechatUnionId sql ERROR：%s", err.Error()))
+		return nil
+	}
+	if len(rows) != 1 {
+		return nil
+	}
+	return rows[0]
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/beewit/beekit/mysql"
 	"github.com/beewit/beekit/redis"
 	"github.com/beewit/beekit/utils/convert"
+	"strings"
 )
 
 var (
@@ -19,11 +20,23 @@ var (
 	IP   = CFG.Get("server.ip")
 	Port = CFG.Get("server.port")
 	Host = fmt.Sprintf("http://%v:%v", IP, Port)
+
+	FileConf = &fileConf{
+		BasePath: convert.ToString(CFG.Get("files.basePath")),
+		Path:     convert.ToString(CFG.Get("files.path")),
+		DoMain:   convert.ToString(CFG.Get("files.doMain")),
+	}
 )
 
 const (
 	PAGE_SIZE = 10
 )
+
+type fileConf struct {
+	BasePath string
+	Path     string
+	DoMain   string
+}
 
 type Account struct {
 	ID       int64  `json:"id"`
@@ -57,4 +70,8 @@ func ToInterfaceAccount(m interface{}) *Account {
 		return nil
 	}
 	return ToByteAccount(b)
+}
+
+func GetSavePath(path string) string {
+	return strings.Replace(path, FileConf.BasePath, "", -1)
 }

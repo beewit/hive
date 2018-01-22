@@ -1,5 +1,5 @@
 /*
-领红包分享红包记录
+红包访问日志
 author：zxb
 2018-01-13
 */
@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
-func AddShareRedPacket(c echo.Context) error {
+func AddRedPacketAccessLog(c echo.Context) error {
 	ws, err := GetMiniAppSession(c)
 	if err != nil || ws == nil {
 		return utils.AuthFailNull(c)
@@ -35,7 +35,7 @@ func AddShareRedPacket(c echo.Context) error {
 	} else {
 		accId = nil
 	}
-	_, err = global.DB.InsertMap("account_share_red_packet", map[string]interface{}{
+	_, err = global.DB.InsertMap("account_send_red_packet_access_log", map[string]interface{}{
 		"id": utils.ID(),
 		"account_send_red_packet_id": id,
 		"account_id":                 accId,
@@ -44,28 +44,20 @@ func AddShareRedPacket(c echo.Context) error {
 		"ip":                         c.RealIP(),
 	})
 	if err != nil {
-		global.Log.Error("AddShareRedPacket account_share_red_packet sql error:%s", err.Error())
+		global.Log.Error("AddShareRedPacket account_send_red_packet_access_log sql error:%s", err.Error())
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
 	}
-	return utils.SuccessNull(c, "分享成功")
+	return utils.SuccessNull(c, "添加红包访问记录成功")
 }
 
-func GetShareRedPacketCountByRedPacketId(c echo.Context) error {
-	ws, err := GetMiniAppSession(c)
+func GetRedPacketAccessLogNum(c echo.Context) error {
+	acc, err := GetAccount(c)
 	if err != nil {
 		return utils.AuthFailNull(c)
 	}
-	id := strings.TrimSpace(c.FormValue("id"))
-	if id == "" || !utils.IsValidNumber(id) {
-		return utils.ErrorNull(c, "id格式错误")
-	}
-	redPacket := GetRedPacket(convert.MustInt64(id))
-	if redPacket == nil {
-		return utils.ErrorNull(c, "红包不存在或已过期")
-	}
-	rows, err := global.DB.Query("SELECT count(1) as num FROM account_share_red_packet WHERE account_send_red_packet_id=? AND wx_union_id=?", id, ws.Unionid)
+	rows, err := global.DB.Query("SELECT count(1) as num FROM v_account_send_red_packet_access_log WHERE redPacketAccountId=? ", acc.ID)
 	if err != nil {
-		global.Log.Error("GetShareRedPacketCountByRedPacketId sql error:%s", err.Error())
+		global.Log.Error("v_account_send_red_packet_access_log sql error:%s", err.Error())
 		return utils.ErrorNull(c, "数据异常，"+err.Error())
 	}
 	if len(rows) != 1 {
