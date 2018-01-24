@@ -146,11 +146,11 @@ func GetReceiveCouponList(c echo.Context) error {
 	page, err := global.DB.QueryPage(&utils.PageTable{
 		Fields:    "*",
 		Table:     "v_account_receive_coupon",
-		Where:     "wx_union_id=? AND " + where,
+		Where:     "wx_union_id=? AND status=? AND " + where,
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		Order:     "receiveTime DESC",
-	}, ws.Unionid)
+	}, ws.Unionid, enum.NORMAL)
 	if err != nil {
 		global.Log.Error("QueryPage v_account_receive_coupon sql error:%s", err.Error())
 		return utils.Error(c, "数据异常，"+err.Error(), nil)

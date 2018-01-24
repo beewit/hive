@@ -92,11 +92,11 @@ func SendRedPacket(c echo.Context) error {
 	if convert.MustFloat64(randomMoney) > convert.MustFloat64(moneyStr) {
 		return utils.ErrorNull(c, "随机金额最大值不能超过红包的总金额")
 	}
-	if blessings != "" && len(blessings) > 100 {
-		return utils.ErrorNull(c, "祝福语字数过长，最长不超过100字")
+	if blessings != "" && len(blessings) > 250 {
+		return utils.ErrorNull(c, "祝福语字数过长，最长不超过250字")
 	}
-	if remarks != "" && len(remarks) > 100 {
-		return utils.ErrorNull(c, "备注字数过长，最长不超过500字")
+	if remarks != "" && len(remarks) > 1000 {
+		return utils.ErrorNull(c, "备注字数过长，最长不超过1000字")
 	}
 	if joinCouponIds != "" {
 		couponIds := strings.Split(joinCouponIds, ",")
@@ -116,13 +116,18 @@ func SendRedPacket(c echo.Context) error {
 	id := utils.ID()
 	currentTime := utils.CurrentTime()
 	ip := c.RealIP()
+	var feeMoney float64
+	funcMap := GetEffectiveFunc(acc.ID, enum.FUNC_RED_PACKET)
+	if funcMap == nil {
+		feeMoney = money * 0.02
+	}
 	_, err = global.DB.InsertMap("account_send_red_packet", map[string]interface{}{
 		"id":              id,
 		"account_id":      acc.ID,
 		"send_name":       sendName,
 		"send_photo":      sendPhoto,
 		"money":           money,
-		"fee_money":       money * 0.02,
+		"fee_money":       feeMoney,
 		"random_money":    randomMoney,
 		"blessings":       blessings,
 		"remarks":         remarks,
@@ -181,7 +186,6 @@ func GetSendRedPacketList(c echo.Context) error {
 	}
 	return utils.Success(c, "获取数据成功", page)
 }
-
 
 //发红包总金额
 func GetSendRedPacketSumPrice(c echo.Context) error {

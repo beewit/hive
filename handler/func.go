@@ -70,7 +70,7 @@ func GetFuncGiveLog(c echo.Context) error {
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		Order:     "log.ct_time DESC",
-	},  acc.ID)
+	}, acc.ID)
 	if err != nil {
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
 	}
@@ -113,17 +113,26 @@ func GetEffectiveFuncById(c echo.Context) error {
 	if !utils.IsValidNumber(funcId) {
 		return utils.ErrorNull(c, "funcId参数错误")
 	}
+	funcMap := GetEffectiveFunc(acc.ID, convert.MustInt64(funcId))
+	if funcMap == nil {
+		return utils.NullData(c)
+	}
+	return utils.Success(c, "获取数据成功",funcMap)
+}
+
+func GetEffectiveFunc(accId, funcId int64) map[string]interface{} {
 	sql := "SELECT f.*,af.expiration_time FROM account_func af LEFT JOIN func f ON af.func_id=f.id " +
 		"LEFT JOIN platform p ON p.id=f.platform_id " +
 		"WHERE af.expiration_time>now() AND f.status=? AND af.account_id=? AND f.id=? LIMIT 1"
-	m, err := global.DB.Query(sql, enum.NORMAL, acc.ID, funcId)
+	m, err := global.DB.Query(sql, enum.NORMAL, accId, funcId)
 	if err != nil {
-		return utils.Error(c, "数据异常，"+err.Error(), nil)
+		global.Log.Error("数据异常，"+err.Error(), nil)
+		return nil
 	}
 	if len(m) != 1 {
-		return utils.NullData(c)
+		return nil
 	}
-	return utils.Success(c, "获取数据成功", m[0])
+	return m[0]
 }
 
 func GetEffectiveFuncList(c echo.Context) error {
@@ -209,7 +218,7 @@ func AddShareWechatAppTime(c echo.Context) error {
 	if sum >= 5 {
 		//判断是否今日赠送过了时间，如果已经赠送不再赠送了
 		sql = "SELECT COUNT(1) as sum FROM account_func_give_log WHERE type='SHARE_APP' AND account_id=? AND func_id=? AND to_days(ct_time) = to_days(now());"
-		m, _ = global.DB.Query(sql, acc.ID,enum.FUNC_WECHAT_APP)
+		m, _ = global.DB.Query(sql, acc.ID, enum.FUNC_WECHAT_APP)
 		if m == nil {
 			return utils.ErrorNull(c, "查询赠送功能使用时间记录失败")
 		}

@@ -227,7 +227,7 @@ func DeleteCoupon(c echo.Context) error {
 	if convert.MustInt64(coupon["account_id"]) != acc.ID {
 		return utils.ErrorNull(c, "删除失败，不是你发的代金券")
 	}
-	if convert.ToString(coupon["status"]) != enum.DELETE {
+	if convert.ToString(coupon["status"]) == enum.DELETE {
 		return utils.ErrorNull(c, "已是删除状态")
 	}
 	x, err := global.DB.Update("UPDATE account_coupon SET status=? WHERE id=?", enum.DELETE, id)
@@ -238,7 +238,7 @@ func DeleteCoupon(c echo.Context) error {
 	if x <= 0 {
 		return utils.ErrorNull(c, "删除代金券失败")
 	}
-	return utils.ErrorNull(c, "删除代金券成功")
+	return utils.SuccessNull(c, "删除代金券成功")
 }
 
 //代金券使用次数
