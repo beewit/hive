@@ -137,6 +137,35 @@ func GetRedPacketCard(id int64) map[string]interface{} {
 	return m[0]
 }
 
+func GetRedPacketCardDef(c echo.Context) error {
+	acc, err := GetAccount(c)
+	if err != nil {
+		return utils.AuthFailNull(c)
+	}
+	funcMap := GetEffectiveFunc(acc.ID, enum.FUNC_RED_PACKET)
+	if funcMap == nil {
+		return nil
+	}
+	m := GetRedPacketCardByDef(acc.ID)
+	if m == nil {
+		return utils.NullData(c)
+	}
+	return utils.SuccessNullMsg(c, m)
+}
+
+//获取默认红包卡片
+func GetRedPacketCardByDef(accId int64) map[string]interface{} {
+	m, err := global.DB.Query("SELECT * FROM account_red_packet_card WHERE account_id=? AND def=1 LIMIT 1", accId)
+	if err != nil {
+		global.Log.Error("account_red_packet_card sql ERROR：", err.Error())
+		return nil
+	}
+	if len(m) != 1 {
+		return nil
+	}
+	return m[0]
+}
+
 func DeleteRedPacketCard(c echo.Context) error {
 	acc, err := GetAccount(c)
 	if err != nil {

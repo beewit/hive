@@ -51,6 +51,7 @@ func Start() {
 	e.POST("/api/account/redpacket/card/del", handler.DeleteRedPacketCard, handler.Filter)
 	e.POST("/api/account/redpacket/card/get", handler.GetRedPacketCardByID, handler.Filter)
 	e.POST("/api/account/redpacket/card/list", handler.GetRedPacketCardList, handler.Filter)
+	e.POST("/api/account/redpacket/card/def", handler.GetRedPacketCardDef, handler.Filter)
 
 	e.POST("/api/app/setting", handler.GetAppSetting)
 
