@@ -35,10 +35,10 @@ func AddCoupon(c echo.Context) error {
 		return utils.ErrorNull(c, "商家名称，最长不超过500字")
 	}
 	if photo == "" {
-		return utils.ErrorNull(c, "请上传发代金券的商家Logo")
+		return utils.ErrorNull(c, "请上传发代金券的商家标志")
 	}
 	if photo != "" && len(photo) > 255 {
-		return utils.ErrorNull(c, "商户Logo地址错误")
+		return utils.ErrorNull(c, "商家标志地址错误")
 	}
 
 	if money == "" || !utils.IsValidNumber(money) {
@@ -111,7 +111,8 @@ func GetCouponList(c echo.Context) error {
 		Order:     "ct_time DESC",
 	}, acc.ID, enum.NORMAL)
 	if err != nil {
-		return utils.Error(c, "数据异常，"+err.Error(), nil)
+		global.Log.Error("QueryPage account_coupon sql error:%s", err.Error())
+		return utils.ErrorNull(c, "数据异常")
 	}
 	if page == nil {
 		return utils.NullData(c)

@@ -42,6 +42,9 @@ func GetRedPacketById(c echo.Context) error {
 		return utils.ErrorNull(c, "获取用户的红包领取记录失败")
 	}
 	redPacket["receiveRedPacket"] = receiveRedPacket
+	if redPacket["account_red_packet_card_id"] != "" && redPacket["account_red_packet_card_id"] != "0" {
+		redPacket["card"] = GetRedPacketCard(convert.MustInt64(redPacket["account_red_packet_card_id"]))
+	}
 	return utils.SuccessNullMsg(c, redPacket)
 }
 
@@ -117,26 +120,43 @@ func SendRedPacket(c echo.Context) error {
 	currentTime := utils.CurrentTime()
 	ip := c.RealIP()
 	var feeMoney float64
+	var redPacketCardId int64
 	funcMap := GetEffectiveFunc(acc.ID, enum.FUNC_RED_PACKET)
 	if funcMap == nil {
 		feeMoney = money * 0.02
+	} else {
+		redPacketCardIdStr := c.FormValue("account_red_packet_card_id")
+		if redPacketCardIdStr != "" && utils.IsValidNumber(redPacketCardIdStr) {
+			card := GetRedPacketCard(convert.MustInt64(redPacketCardIdStr))
+			if card == nil {
+				return utils.ErrorNull(c, "选择的红包卡片不存在")
+			}
+			if convert.MustInt64(card["account_id"]) != acc.ID {
+				return utils.ErrorNull(c, "此红包卡片不属于你所有")
+			}
+			if convert.ToString(card["status"]) != enum.NORMAL {
+				return utils.ErrorNull(c, "此红包卡片已删除")
+			}
+			redPacketCardId = convert.MustInt64(card["id"])
+		}
 	}
 	_, err = global.DB.InsertMap("account_send_red_packet", map[string]interface{}{
-		"id":              id,
-		"account_id":      acc.ID,
-		"send_name":       sendName,
-		"send_photo":      sendPhoto,
-		"money":           money,
-		"fee_money":       feeMoney,
-		"random_money":    randomMoney,
-		"blessings":       blessings,
-		"remarks":         remarks,
-		"pay_state":       enum.PAY_STATUS_NOT,
-		"ct_time":         currentTime,
-		"ut_time":         currentTime,
-		"join_coupon_ids": joinCouponIds,
-		"status":          enum.NORMAL,
-		"ip":              ip,
+		"id":                         id,
+		"account_id":                 acc.ID,
+		"send_name":                  sendName,
+		"send_photo":                 sendPhoto,
+		"money":                      money,
+		"fee_money":                  feeMoney,
+		"random_money":               randomMoney,
+		"blessings":                  blessings,
+		"remarks":                    remarks,
+		"pay_state":                  enum.PAY_STATUS_NOT,
+		"ct_time":                    currentTime,
+		"ut_time":                    currentTime,
+		"join_coupon_ids":            joinCouponIds,
+		"status":                     enum.NORMAL,
+		"ip":                         ip,
+		"account_red_packet_card_id": redPacketCardId,
 	})
 	if err != nil {
 		global.Log.Error("global.DB.InsertMap account_send_red_packet sql error:%s", err.Error())

@@ -44,6 +44,14 @@ func Start() {
 	e.POST("/api/account/identity/auth/get", handler.GetIdentityAuth, handler.Filter)
 	e.POST("/api/account/func/give/log", handler.GetFuncGiveLog, handler.Filter)
 	e.POST("/api/account/share/account/list", handler.GetShareAccountList, handler.Filter)
+
+	e.POST("/api/account/commpany/auth/submit", handler.SubmitAccountCompanyAuth, handler.Filter)
+	e.POST("/api/account/commpany/auth/get", handler.GetAccountCompanyAuthByID, handler.Filter)
+	e.POST("/api/account/redpacket/card/add", handler.AddRedPacketCard, handler.Filter)
+	e.POST("/api/account/redpacket/card/del", handler.DeleteRedPacketCard, handler.Filter)
+	e.POST("/api/account/redpacket/card/get", handler.GetRedPacketCardByID, handler.Filter)
+	e.POST("/api/account/redpacket/card/list", handler.GetRedPacketCardList, handler.Filter)
+
 	e.POST("/api/app/setting", handler.GetAppSetting)
 
 	e.POST("/api/account/wallet", handler.GetWallet, handler.Filter)
