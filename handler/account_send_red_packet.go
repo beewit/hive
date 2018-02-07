@@ -17,9 +17,9 @@ import (
 )
 
 func GetRedPacketById(c echo.Context) error {
-	ws, err := GetMiniAppSession(c)
-	if err != nil || ws == nil {
-		return utils.AuthFailNull(c)
+	ws := GetOauthUser(c)
+	if ws == nil {
+		return utils.AuthWechatFailNull(c)
 	}
 	id := strings.TrimSpace(c.FormValue("id"))
 	if id == "" || !utils.IsValidNumber(id) {
@@ -37,7 +37,7 @@ func GetRedPacketById(c echo.Context) error {
 		couponMaps = GetCouponByIds(joinCouponIds)
 	}
 	redPacket["couponMaps"] = couponMaps
-	receiveRedPacket, err := GetReceiveRedPacket(ws.Unionid, redPacketId)
+	receiveRedPacket, err := GetReceiveRedPacket(ws.UnionId, redPacketId)
 	if err != nil {
 		return utils.ErrorNull(c, "获取用户的红包领取记录失败")
 	}
@@ -106,13 +106,13 @@ func SendRedPacket(c echo.Context) error {
 		if len(couponIds) > 0 {
 			for i := 0; i < len(couponIds); i++ {
 				if !utils.IsValidNumber(couponIds[i]) {
-					return utils.ErrorNull(c, "选择代金券错误")
+					return utils.ErrorNull(c, "选择现金券错误")
 				}
 			}
-			//判断代金券有效性
+			//判断现金券有效性
 			couponMaps := GetCouponByIds(joinCouponIds)
 			if couponMaps == nil || len(couponIds) != len(couponMaps) {
-				return utils.ErrorNull(c, "选择代金券错误或代金券已删除")
+				return utils.ErrorNull(c, "选择现金券错误或现金券已删除")
 			}
 		}
 	}
@@ -177,8 +177,8 @@ func GetSendRedPacketList(c echo.Context) error {
 	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
 	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
 	t := c.FormValue("t")
-	//已支付，已完成
-	where := fmt.Sprintf("pay_state='%s' AND money-send_money>=1", enum.PAY_STATUS_END)
+	//已支付，已完成，并且已审核
+	where := fmt.Sprintf("pay_state='%s' AND money-send_money>=1 AND review_status='%s'", enum.PAY_STATUS_END,enum.REVIEW_OK)
 	switch t {
 	case "finish":
 		//已领完
@@ -187,6 +187,10 @@ func GetSendRedPacketList(c echo.Context) error {
 	case "notPay":
 		//未支付
 		where = fmt.Sprintf("pay_state='%s'", enum.PAY_STATUS_NOT)
+		break
+	case "review":
+		//已支付，审核中、未审核、审核失败非审核通过的状态
+		where = fmt.Sprintf("pay_state='%s' AND review_status<>'%s'",enum.PAY_STATUS_END, enum.REVIEW_OK)
 		break
 	}
 	page, err := global.DB.QueryPage(&utils.PageTable{

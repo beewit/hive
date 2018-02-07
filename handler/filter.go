@@ -2,15 +2,18 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
+	"io/ioutil"
+	"strings"
+
 	"github.com/beewit/beekit/utils"
 	"github.com/beewit/beekit/utils/convert"
 	"github.com/beewit/beekit/utils/enum"
 	"github.com/beewit/hive/global"
+	"github.com/beewit/wechat/mp/user/oauth2"
 	"github.com/labstack/echo"
-	"io/ioutil"
-	"strings"
 )
+
+var MPSessionId string = "mpSessionId"
 
 func readBody(c echo.Context) (map[string]string, error) {
 	body, bErr := ioutil.ReadAll(c.Request().Body)
@@ -91,19 +94,36 @@ type WxSesstion struct {
 	Unionid    string `json:"unionid"`
 }
 
-func GetMiniAppSession(c echo.Context) (*WxSesstion, error) {
-	miniAppSessionId := strings.TrimSpace(c.FormValue("miniAppSessionId"))
-	if miniAppSessionId == "" {
-		return nil, errors.New("未识别到用户标识")
+//func GetMiniAppSession(c echo.Context) (*WxSesstion, error) {
+//	miniAppSessionId := strings.TrimSpace(c.FormValue("miniAppSessionId"))
+//	if miniAppSessionId == "" {
+//		return nil, errors.New("未识别到用户标识")
+//	}
+//	wsStr, err := global.RD.GetString(miniAppSessionId)
+//	if err != nil {
+//		return nil, errors.New("未识别到用户标识")
+//	}
+//	var ws *WxSesstion
+//	err = json.Unmarshal([]byte(wsStr), &ws)
+//	if err != nil {
+//		return nil, errors.New("获取用户登录标识失败")
+//	}
+//	return ws, nil
+//}
+
+func GetOauthUser(c echo.Context) *oauth2.UserInfo {
+	mpSessionId := strings.TrimSpace(c.FormValue(MPSessionId))
+	if mpSessionId == "" {
+		return nil
 	}
-	wsStr, err := global.RD.GetString(miniAppSessionId)
+	us, err := global.RD.GetString(mpSessionId)
 	if err != nil {
-		return nil, errors.New("未识别到用户标识")
+		return nil
 	}
-	var ws *WxSesstion
-	err = json.Unmarshal([]byte(wsStr), &ws)
+	var u *oauth2.UserInfo
+	err = json.Unmarshal([]byte(us), &u)
 	if err != nil {
-		return nil, errors.New("获取用户登录标识失败")
+		return nil
 	}
-	return ws, nil
+	return u
 }

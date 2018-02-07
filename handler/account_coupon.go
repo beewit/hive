@@ -35,14 +35,14 @@ func AddCoupon(c echo.Context) error {
 		return utils.ErrorNull(c, "商家名称，最长不超过500字")
 	}
 	if photo == "" {
-		return utils.ErrorNull(c, "请上传发代金券的商家标志")
+		return utils.ErrorNull(c, "请上传发现金券的商家标志")
 	}
 	if photo != "" && len(photo) > 255 {
 		return utils.ErrorNull(c, "商家标志地址错误")
 	}
 
 	if money == "" || !utils.IsValidNumber(money) {
-		return utils.ErrorNull(c, "请正确填写代金券抵扣金额")
+		return utils.ErrorNull(c, "请正确填写现金券抵扣金额")
 	}
 	if condition != "" && len(condition) > 50 {
 		return utils.ErrorNull(c, "使用条件字数过长，最长不超过50字")
@@ -51,7 +51,7 @@ func AddCoupon(c echo.Context) error {
 		return utils.ErrorNull(c, "到期时间格式错误")
 	}
 	if number == "" || !utils.IsValidNumber(number) {
-		return utils.ErrorNull(c, "代金券数量格式错误")
+		return utils.ErrorNull(c, "现金券数量格式错误")
 	}
 	if desc != "" && len(desc) > 500 {
 		return utils.ErrorNull(c, "使用说明字数过长，最长不超过500字")
@@ -62,6 +62,8 @@ func AddCoupon(c echo.Context) error {
 	coupon["account_id"] = acc.ID
 	coupon["money"] = money
 	coupon["number"] = number
+	coupon["photo"] = photo
+	coupon["name"] = name
 	if condition != "" {
 		coupon["`condition`"] = condition
 	}
@@ -77,9 +79,9 @@ func AddCoupon(c echo.Context) error {
 	_, err = global.DB.InsertMap("account_coupon", coupon)
 	if err != nil {
 		global.Log.Error("AddCoupon sql error:%s", err.Error())
-		return utils.ErrorNull(c, "发代金券失败")
+		return utils.ErrorNull(c, "发现金券失败")
 	}
-	return utils.Success(c, "发代金券成功", id)
+	return utils.Success(c, "发现金券成功", id)
 }
 
 func GetCouponList(c echo.Context) error {
@@ -159,7 +161,7 @@ func GetCouponByIds(ids string) []map[string]interface{} {
 	return m
 }
 
-//使用代金券
+//使用现金券
 func UseCoupon(c echo.Context) error {
 	acc, err := GetAccount(c)
 	if err != nil {
@@ -167,37 +169,37 @@ func UseCoupon(c echo.Context) error {
 	}
 	qrCodeKey := strings.TrimSpace(c.FormValue("qrCodeKey"))
 	if qrCodeKey == "" {
-		return utils.ErrorNull(c, "未识别有效代金券二维码")
+		return utils.ErrorNull(c, "未识别有效现金券二维码")
 	}
 	keys := strings.Split(qrCodeKey, "|")
 	if len(keys) < 2 {
-		return utils.ErrorNull(c, "未识别有效代金券二维码")
+		return utils.ErrorNull(c, "未识别有效现金券二维码")
 	}
 	id := keys[0]
 	if id == "" || !utils.IsValidNumber(id) {
-		return utils.ErrorNull(c, "未识别有效代金券二维码")
+		return utils.ErrorNull(c, "未识别有效现金券二维码")
 	}
 	receiveCoupon := GetReceiveCoupon(convert.MustInt64(id))
 	if receiveCoupon == nil {
-		return utils.ErrorNull(c, "代金券不存在")
+		return utils.ErrorNull(c, "现金券不存在")
 	}
 	if convert.ToString(receiveCoupon["status"]) != enum.COUPON_USE_NOT {
-		return utils.ErrorNull(c, "代金券已使用或已过期")
+		return utils.ErrorNull(c, "现金券已使用或已过期")
 	}
 	coupon := GetCoupon(convert.MustInt64(receiveCoupon["account_coupon_id"]))
 	if coupon == nil {
-		return utils.ErrorNull(c, "代金券已过期")
+		return utils.ErrorNull(c, "现金券已过期")
 	}
 	if convert.MustInt64(coupon["account_id"]) != acc.ID {
-		return utils.ErrorNull(c, "使用失败，不属于我们的代金券")
+		return utils.ErrorNull(c, "使用失败，不属于我们的现金券")
 	}
 	if convert.ToString(coupon["expire_time"]) != "" {
 		expirTime, errExpirTime := time.Parse("2006-01-02 15:04:05", convert.ToString(coupon["expire_time"]))
 		if errExpirTime != nil {
-			return utils.ErrorNull(c, "该代金券到期时间异常")
+			return utils.ErrorNull(c, "该现金券到期时间异常")
 		}
 		if !expirTime.Add(24 * time.Hour).After(time.Now()) {
-			return utils.ErrorNull(c, "该代金券已到期")
+			return utils.ErrorNull(c, "该现金券已到期")
 		}
 	}
 	//开始使用
@@ -207,9 +209,9 @@ func UseCoupon(c echo.Context) error {
 		return nil
 	}
 	if x <= 0 {
-		return utils.ErrorNull(c, "使用代金券失败")
+		return utils.ErrorNull(c, "使用现金券失败")
 	}
-	return utils.ErrorNull(c, "使用代金券成功")
+	return utils.ErrorNull(c, "使用现金券成功")
 }
 
 func DeleteCoupon(c echo.Context) error {
@@ -223,10 +225,10 @@ func DeleteCoupon(c echo.Context) error {
 	}
 	coupon := GetCoupon(convert.MustInt64(id))
 	if coupon == nil {
-		return utils.ErrorNull(c, "该代金券不存在")
+		return utils.ErrorNull(c, "该现金券不存在")
 	}
 	if convert.MustInt64(coupon["account_id"]) != acc.ID {
-		return utils.ErrorNull(c, "删除失败，不是你发的代金券")
+		return utils.ErrorNull(c, "删除失败，不是你发的现金券")
 	}
 	if convert.ToString(coupon["status"]) == enum.DELETE {
 		return utils.ErrorNull(c, "已是删除状态")
@@ -237,12 +239,12 @@ func DeleteCoupon(c echo.Context) error {
 		return nil
 	}
 	if x <= 0 {
-		return utils.ErrorNull(c, "删除代金券失败")
+		return utils.ErrorNull(c, "删除现金券失败")
 	}
-	return utils.SuccessNull(c, "删除代金券成功")
+	return utils.SuccessNull(c, "删除现金券成功")
 }
 
-//代金券使用次数
+//现金券使用次数
 func GetUseCouponNum(c echo.Context) error {
 	acc, err := GetAccount(c)
 	if err != nil {

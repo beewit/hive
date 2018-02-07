@@ -130,7 +130,7 @@ func TestGetReceiveRedPacketAndCouponList(t *testing.T) {
 		couponList, err = global.DB.Query(sql)
 		if err != nil {
 			global.Log.Error("GetReceiveRedPacketAndCouponList account_receive_coupon sql error:%s", err.Error())
-			t.Error("获取领取代金券数据失败", nil)
+			t.Error("获取领取现金券数据失败", nil)
 		}
 	}
 

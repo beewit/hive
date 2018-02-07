@@ -1,5 +1,5 @@
 /*
-领取代金券记录
+领取现金券记录
 author：zxb
 2018-01-13
 */
@@ -18,9 +18,9 @@ import (
 )
 
 func ReceiveCoupon(c echo.Context) error {
-	ws, err := GetMiniAppSession(c)
-	if err != nil {
-		return utils.AuthFailNull(c)
+	ws := GetOauthUser(c)
+	if ws == nil {
+		return utils.AuthWechatFailNull(c)
 	}
 	id := c.FormValue("id")
 	if id == "" || !utils.IsValidNumber(id) {
@@ -28,34 +28,34 @@ func ReceiveCoupon(c echo.Context) error {
 	}
 	coupon := GetCoupon(convert.MustInt64(id))
 	if coupon == nil {
-		return utils.ErrorNull(c, "该代金券不存在")
+		return utils.ErrorNull(c, "该现金券不存在")
 	}
 	sendCouponAcc := GetAccountById(convert.MustInt64(coupon["account_id"]))
 	if sendCouponAcc == nil {
-		return utils.ErrorNull(c, "发代金券的账号已被锁定无法领取")
+		return utils.ErrorNull(c, "发现金券的账号已被锁定无法领取")
 	}
 	if coupon["status"] != enum.NORMAL {
-		return utils.ErrorNull(c, "该代金券已失效")
+		return utils.ErrorNull(c, "该现金券已失效")
 	}
 	if coupon["number"] == coupon["receive_number"] {
-		return utils.ErrorNull(c, "该代金券已领完")
+		return utils.ErrorNull(c, "该现金券已领完")
 	}
 	if convert.ToString(coupon["expire_time"]) != "" {
 		expirTime, errExpirTime := time.Parse("2006-01-02 15:04:05", convert.ToString(coupon["expire_time"]))
 		if errExpirTime != nil {
-			return utils.ErrorNull(c, "该代金券到期时间异常")
+			return utils.ErrorNull(c, "该现金券到期时间异常")
 		}
 		if !expirTime.Add(24 * time.Hour).After(time.Now()) {
-			return utils.ErrorNull(c, "该代金券已到期无法领取")
+			return utils.ErrorNull(c, "该现金券已到期无法领取")
 		}
 	}
 	couponId := convert.MustInt64(coupon["id"])
-	receiveCoupon := GetReceiveCouponByCouponId(couponId, ws.Unionid)
+	receiveCoupon := GetReceiveCouponByCouponId(couponId, ws.UnionId)
 	if receiveCoupon != nil {
 		return utils.ErrorNull(c, "已领取过了")
 	}
 
-	acc := GetAccountByUnionId(ws.Unionid, enum.WECHAT)
+	acc := GetAccountByUnionId(ws.UnionId, enum.WECHAT)
 	var accId interface{}
 	if acc != nil {
 		accId = acc["id"]
@@ -63,6 +63,7 @@ func ReceiveCoupon(c echo.Context) error {
 		accId = nil
 	}
 	flog := false
+	var err error
 	global.DB.Tx(func(tx *mysql.SqlConnTransaction) {
 		_, err = tx.InsertMap("account_receive_coupon", map[string]interface{}{
 			"id":                utils.ID(),
@@ -71,7 +72,7 @@ func ReceiveCoupon(c echo.Context) error {
 			"ct_time":           utils.CurrentTime(),
 			"ip":                c.RealIP(),
 			"status":            "未使用",
-			"wx_union_id":       ws.Unionid,
+			"wx_union_id":       ws.UnionId,
 		})
 		if err != nil {
 			global.Log.Error("insertMap account_receive_coupon sql error:%s", err.Error())
@@ -88,14 +89,14 @@ func ReceiveCoupon(c echo.Context) error {
 		flog = true
 	}, func(err error) {
 		if err != nil {
-			global.Log.Error("领取代金券失败：%v", err)
+			global.Log.Error("领取现金券失败：%v", err)
 			flog = false
 		}
 	})
 	if !flog {
-		return utils.ErrorNull(c, "领取代金券失败")
+		return utils.ErrorNull(c, "领取现金券失败")
 	}
-	return utils.SuccessNull(c, "领取代金券成功")
+	return utils.SuccessNull(c, "领取现金券成功")
 }
 
 func GetReceiveCoupon(id int64) map[string]interface{} {
@@ -122,11 +123,11 @@ func GetReceiveCouponByCouponId(id int64, unionId string) map[string]interface{}
 	return m[0]
 }
 
-//领取代金券分页
+//领取现金券分页
 func GetReceiveCouponList(c echo.Context) error {
-	ws, err := GetMiniAppSession(c)
-	if err != nil {
-		return utils.AuthFailNull(c)
+	ws := GetOauthUser(c)
+	if ws == nil {
+		return utils.AuthWechatFailNull(c)
 	}
 	t := c.FormValue("t")
 	//未使用和未过期
@@ -150,7 +151,7 @@ func GetReceiveCouponList(c echo.Context) error {
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		Order:     "receiveTime DESC",
-	}, ws.Unionid, enum.NORMAL)
+	}, ws.UnionId, enum.NORMAL)
 	if err != nil {
 		global.Log.Error("QueryPage v_account_receive_coupon sql error:%s", err.Error())
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
@@ -162,25 +163,25 @@ func GetReceiveCouponList(c echo.Context) error {
 }
 
 func CreateCouponQrCode(c echo.Context) error {
-	ws, err := GetMiniAppSession(c)
-	if err != nil {
-		return utils.AuthFailNull(c)
+	ws := GetOauthUser(c)
+	if ws == nil {
+		return utils.AuthWechatFailNull(c)
 	}
 	id := c.FormValue("id")
 	if id == "" || !utils.IsValidNumber(id) {
 		return utils.ErrorNull(c, "id格式错误")
 	}
-	rows, err := global.DB.Query("SELECT * FROM account_receive_coupon WHERE id=? AND wx_union_id=? LIMIT 1", id, ws.Unionid)
+	rows, err := global.DB.Query("SELECT * FROM account_receive_coupon WHERE id=? AND wx_union_id=? LIMIT 1", id, ws.UnionId)
 	if err != nil {
 		global.Log.Error("account_receive_coupon sql error:%s", err.Error())
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
 	}
 	if len(rows) != 1 {
-		return utils.Error(c, "该代金券不存在", nil)
+		return utils.Error(c, "该现金券不存在", nil)
 	}
 	qrcode := convert.ToString(rows[0]["qrcode"])
 	if qrcode != "" {
-		return utils.Success(c, "获取使用代金券二维码成功", qrcode)
+		return utils.Success(c, "获取使用现金券二维码成功", qrcode)
 	}
 	fileName := utils.ID()
 	//生成二维码
@@ -223,5 +224,5 @@ func CreateCouponQrCode(c echo.Context) error {
 			global.Log.Error("保存上传文件日志失败，ERROR：%s", err.Error())
 		}
 	}()
-	return utils.Success(c, "获取使用代金券二维码成功", path)
+	return utils.Success(c, "获取使用现金券二维码成功", path)
 }

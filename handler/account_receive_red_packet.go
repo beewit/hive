@@ -19,9 +19,9 @@ import (
 )
 
 func ReceiveRedPacket(c echo.Context) error {
-	ws, err := GetMiniAppSession(c)
-	if err != nil {
-		return utils.AuthFailNull(c)
+	ws := GetOauthUser(c)
+	if ws == nil {
+		return utils.AuthWechatFailNull(c)
 	}
 	id := c.FormValue("id")
 	if id == "" || !utils.IsValidNumber(id) {
@@ -42,7 +42,7 @@ func ReceiveRedPacket(c echo.Context) error {
 	if redPacket["pay_state"] != enum.PAY_STATUS_END {
 		return utils.ErrorNull(c, "红包无效")
 	}
-	receiveRedPacket, err := GetReceiveRedPacket(ws.Unionid, redPacketId)
+	receiveRedPacket, err := GetReceiveRedPacket(ws.UnionId, redPacketId)
 	if err != nil {
 		return utils.ErrorNull(c, "获取用户的红包领取记录失败")
 	}
@@ -82,7 +82,7 @@ func ReceiveRedPacket(c echo.Context) error {
 		return utils.ErrorNull(c, "该红包已领完")
 	}
 
-	acc := GetAccountByUnionId(ws.Unionid, enum.WECHAT)
+	acc := GetAccountByUnionId(ws.UnionId, enum.WECHAT)
 	var accId interface{}
 	if acc != nil {
 		accId = acc["id"]
@@ -92,7 +92,7 @@ func ReceiveRedPacket(c echo.Context) error {
 	receiveRedPacketId := utils.ID()
 	receiveRedPacket = map[string]interface{}{
 		"id":                         receiveRedPacketId,
-		"wx_union_id":                ws.Unionid,
+		"wx_union_id":                ws.UnionId,
 		"account_id":                 accId,
 		"account_send_red_packet_id": redPacket["id"],
 		"ct_time":                    utils.CurrentTime(),
@@ -168,9 +168,9 @@ func GetReceiveRedPacket(uinonId string, redPacketId int64) (map[string]interfac
 *领取红包记录
  */
 func GetReceiveRedPacketList(c echo.Context) error {
-	ws, err := GetMiniAppSession(c)
-	if err != nil {
-		return utils.AuthFailNull(c)
+	ws := GetOauthUser(c)
+	if ws == nil {
+		return utils.AuthWechatFailNull(c)
 	}
 	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
 	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
@@ -181,7 +181,7 @@ func GetReceiveRedPacketList(c echo.Context) error {
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		Order:     "receiveTime DESC",
-	}, ws.Unionid)
+	}, ws.UnionId)
 	if err != nil {
 		global.Log.Error("GetReceiveRedPacketList v_account_receive_red_packet sql error:%s", err.Error())
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
@@ -194,9 +194,9 @@ func GetReceiveRedPacketList(c echo.Context) error {
 
 //领取红包和优惠券的记录
 func GetReceiveRedPacketAndCouponList(c echo.Context) error {
-	_, err := GetMiniAppSession(c)
-	if err != nil {
-		return utils.AuthFailNull(c)
+	ws := GetOauthUser(c)
+	if ws == nil {
+		return utils.AuthWechatFailNull(c)
 	}
 	id := strings.TrimSpace(c.FormValue("id"))
 	if id == "" || !utils.IsValidNumber(id) {
@@ -220,7 +220,7 @@ func GetReceiveRedPacketAndCouponList(c echo.Context) error {
 		couponList, err = global.DB.Query(sql)
 		if err != nil {
 			global.Log.Error("GetReceiveRedPacketAndCouponList account_receive_coupon sql error:%s", err.Error())
-			return utils.Error(c, "获取领取代金券数据失败", nil)
+			return utils.Error(c, "获取领取现金券数据失败", nil)
 		}
 	}
 	return utils.SuccessNullMsg(c, map[string]interface{}{

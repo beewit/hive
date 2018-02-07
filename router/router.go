@@ -68,14 +68,14 @@ func Start() {
 	e.POST("/api/add/system/log", handler.AddSystemLog)
 
 	//小程序
-	//代金券
+	//现金券
 	e.POST("/api/account/coupon/add", handler.AddCoupon, handler.Filter)
 	e.POST("/api/account/coupon/use", handler.UseCoupon, handler.Filter)
 	e.POST("/api/account/coupon/delete", handler.DeleteCoupon, handler.Filter)
-	//发送代金券列表
+	//发送现金券列表
 	e.POST("/api/account/coupon/list", handler.GetCouponList, handler.Filter)
 	e.POST("/api/account/coupon/use/num", handler.GetUseCouponNum, handler.Filter)
-	//代金券详情
+	//现金券详情
 	e.POST("/api/account/coupon/get", handler.GetCouponByID, handler.Filter)
 	//红包
 	e.POST("/api/account/redpacket", handler.GetRedPacketById)
@@ -89,21 +89,25 @@ func Start() {
 	e.POST("/api/account/redpacket/access/log/num", handler.GetRedPacketAccessLogNum, handler.Filter)
 
 	//[小程序非系统账号也可访问，根据小程序用户标识]
-	//领取代金券
+	//领取现金券
 	e.POST("/api/account/receive/coupon", handler.ReceiveCoupon)
 	e.POST("/api/account/receive/coupon/qrcode", handler.CreateCouponQrCode)
-	//红包的领取记录和领取代金券记录
+	//红包的领取记录和领取现金券记录
 	e.POST("/api/account/redpacket/receive/coupon/record", handler.GetReceiveRedPacketAndCouponList)
 	//领取的红包记录
 	e.POST("/api/account/redpacket/receive/list", handler.GetReceiveRedPacketList)
 	//创建红包领取记录
 	e.POST("/api/account/redpacket/receive", handler.ReceiveRedPacket)
-	//领取代金券记录
+	//领取现金券记录
 	e.POST("/api/account/receive/coupon/list", handler.GetReceiveCouponList)
 	//分享红包
 	e.POST("/api/account/share/redpacket", handler.AddShareRedPacket)
 	//分享红包
 	e.POST("/api/account/share/redpacket/num", handler.GetShareRedPacketCountByRedPacketId)
+
+	e.GET("/hive/test", func(c echo.Context) error {
+		return utils.Success(c,"test",nil)
+	})
 
 	utils.Open(global.Host)
 	port := ":" + convert.ToString(global.Port)

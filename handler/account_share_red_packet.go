@@ -16,9 +16,9 @@ import (
 )
 
 func AddShareRedPacket(c echo.Context) error {
-	ws, err := GetMiniAppSession(c)
-	if err != nil || ws == nil {
-		return utils.AuthFailNull(c)
+	ws := GetOauthUser(c)
+	if ws == nil {
+		return utils.AuthWechatFailNull(c)
 	}
 	id := strings.TrimSpace(c.FormValue("id"))
 	if id == "" || !utils.IsValidNumber(id) {
@@ -28,19 +28,19 @@ func AddShareRedPacket(c echo.Context) error {
 	if redPacket == nil {
 		return utils.ErrorNull(c, "红包不存在或已过期")
 	}
-	acc := GetAccountByUnionId(ws.Unionid, enum.WECHAT)
+	acc := GetAccountByUnionId(ws.UnionId, enum.WECHAT)
 	var accId interface{}
 	if acc != nil {
 		accId = acc["id"]
 	} else {
 		accId = nil
 	}
-	_, err = global.DB.InsertMap("account_share_red_packet", map[string]interface{}{
+	_, err := global.DB.InsertMap("account_share_red_packet", map[string]interface{}{
 		"id": utils.ID(),
 		"account_send_red_packet_id": id,
 		"account_id":                 accId,
 		"ct_time":                    utils.CurrentTime(),
-		"wx_union_id":                ws.Unionid,
+		"wx_union_id":                ws.UnionId,
 		"ip":                         c.RealIP(),
 	})
 	if err != nil {
@@ -51,9 +51,9 @@ func AddShareRedPacket(c echo.Context) error {
 }
 
 func GetShareRedPacketCountByRedPacketId(c echo.Context) error {
-	ws, err := GetMiniAppSession(c)
-	if err != nil {
-		return utils.AuthFailNull(c)
+	ws := GetOauthUser(c)
+	if ws == nil {
+		return utils.AuthWechatFailNull(c)
 	}
 	id := strings.TrimSpace(c.FormValue("id"))
 	if id == "" || !utils.IsValidNumber(id) {
@@ -63,7 +63,7 @@ func GetShareRedPacketCountByRedPacketId(c echo.Context) error {
 	if redPacket == nil {
 		return utils.ErrorNull(c, "红包不存在或已过期")
 	}
-	rows, err := global.DB.Query("SELECT count(1) as num FROM account_share_red_packet WHERE account_send_red_packet_id=? AND wx_union_id=?", id, ws.Unionid)
+	rows, err := global.DB.Query("SELECT count(1) as num FROM account_share_red_packet WHERE account_send_red_packet_id=? AND wx_union_id=?", id, ws.UnionId)
 	if err != nil {
 		global.Log.Error("GetShareRedPacketCountByRedPacketId sql error:%s", err.Error())
 		return utils.ErrorNull(c, "数据异常，"+err.Error())
