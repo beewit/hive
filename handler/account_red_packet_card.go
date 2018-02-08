@@ -45,7 +45,8 @@ func AddRedPacketCard(c echo.Context) error {
 	if len(address) > 255 {
 		return utils.ErrorNull(c, "联系地址，最长不超过255字")
 	}
-	if def == "1" {
+	if def == "true" {
+		def = "1"
 	} else {
 		def = "0"
 	}

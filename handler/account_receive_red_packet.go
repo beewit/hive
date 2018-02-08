@@ -23,6 +23,9 @@ func ReceiveRedPacket(c echo.Context) error {
 	if ws == nil {
 		return utils.AuthWechatFailNull(c)
 	}
+	if ws.UnionId == "" {
+		return utils.ErrorNull(c, "未能获取微信用户标识，领取红包失败");
+	}
 	id := c.FormValue("id")
 	if id == "" || !utils.IsValidNumber(id) {
 		return utils.ErrorNull(c, "id格式错误")
@@ -56,7 +59,8 @@ func ReceiveRedPacket(c echo.Context) error {
 				global.Log.Error("领红包二维码到期时间异常：%s", err.Error())
 				return utils.ErrorNull(c, "领红包二维码到期时间异常：")
 			}
-			if !qrcodeTime.After(time.Now()) {
+			//30天过期
+			if !qrcodeTime.After(time.Now().Add(-time.Hour * 24 * 29)) {
 				//已过期
 				createQrCode = true
 			}
@@ -137,7 +141,7 @@ func UpdateRedPacketQrCode(receiveRedPacketId int64) string {
 	}
 	if qrCodePath != "" {
 		x, err := global.DB.Update("UPDATE account_receive_red_packet SET qrcode=?,qrcode_time=? WHERE id=?", qrCodePath,
-			utils.FormatTime(time.Now().Add(-time.Hour)), receiveRedPacketId)
+			utils.CurrentTime(), receiveRedPacketId)
 		if err != nil {
 			global.Log.Error(err.Error())
 			return ""

@@ -44,9 +44,18 @@ func AddCoupon(c echo.Context) error {
 	if money == "" || !utils.IsValidNumber(money) {
 		return utils.ErrorNull(c, "请正确填写现金券抵扣金额")
 	}
-	if condition != "" && len(condition) > 50 {
-		return utils.ErrorNull(c, "使用条件字数过长，最长不超过50字")
+
+	if convert.MustFloat64(money) <= 0 {
+		return utils.ErrorNull(c, "现金券抵扣金额必须大于0")
 	}
+
+	if condition == "" || !utils.IsValidNumber(money) {
+		return utils.ErrorNull(c, "请正确填写现金券使用条件")
+	}
+	if convert.MustFloat64(condition) <= 0 {
+		return utils.ErrorNull(c, "使用条件满可用金额必须大于等于0")
+	}
+
 	if expireTime != "" && !utils.IsValidDate(expireTime) {
 		return utils.ErrorNull(c, "到期时间格式错误")
 	}
