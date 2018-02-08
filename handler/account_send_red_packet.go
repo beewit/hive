@@ -178,7 +178,7 @@ func GetSendRedPacketList(c echo.Context) error {
 	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
 	t := c.FormValue("t")
 	//已支付，已完成，并且已审核
-	where := fmt.Sprintf("pay_state='%s' AND money-send_money>=1 AND review_status='%s'", enum.PAY_STATUS_END,enum.REVIEW_OK)
+	where := fmt.Sprintf("pay_state='%s' AND money-send_money>=1 AND review_status='%s'", enum.PAY_STATUS_END, enum.REVIEW_OK)
 	switch t {
 	case "finish":
 		//已领完
@@ -190,16 +190,17 @@ func GetSendRedPacketList(c echo.Context) error {
 		break
 	case "review":
 		//已支付，审核中、未审核、审核失败非审核通过的状态
-		where = fmt.Sprintf("pay_state='%s' AND review_status<>'%s'",enum.PAY_STATUS_END, enum.REVIEW_OK)
+		where = fmt.Sprintf("pay_state='%s' AND review_status<>'%s'", enum.PAY_STATUS_END, enum.REVIEW_OK)
 		break
 	}
 	page, err := global.DB.QueryPage(&utils.PageTable{
-		Fields:    "*",
-		Table:     "account_send_red_packet",
-		Where:     "account_id=? AND status=? AND " + where,
+		Fields:    "red.*,COUNT(log.account_send_red_packet_id) as influenceNum",
+		Table:     "account_send_red_packet red LEFT JOIN account_send_red_packet_access_log log ON red.id=log.account_send_red_packet_id ",
+		Where:     "red.account_id=? AND red.status=? AND " + where,
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
-		Order:     "ct_time DESC",
+		Groupby:   "log.account_send_red_packet_id",
+		Order:     "red.ct_time DESC",
 	}, acc.ID, enum.NORMAL)
 	if err != nil {
 		global.Log.Error("GetSendRedPacketList sql error:%s", err.Error())
