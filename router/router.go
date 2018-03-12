@@ -105,6 +105,12 @@ func Start() {
 	//分享红包
 	e.POST("/api/account/share/redpacket/num", handler.GetShareRedPacketCountByRedPacketId)
 
+	//帮助
+	e.POST("/api/help/list",handler.GetHelpList)
+	e.GET("/api/help/list",handler.GetHelpList)
+	e.POST("/api/help/get",handler.GetHelp)
+	e.GET("/api/help/get",handler.GetHelp)
+
 	e.GET("/hive/test", func(c echo.Context) error {
 		return utils.Success(c,"test",nil)
 	})

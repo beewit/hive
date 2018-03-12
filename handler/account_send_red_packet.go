@@ -123,7 +123,7 @@ func SendRedPacket(c echo.Context) error {
 	var redPacketCardId int64
 	funcMap := GetEffectiveFunc(acc.ID, enum.FUNC_RED_PACKET)
 	if funcMap == nil {
-		feeMoney = money * 0.02
+		feeMoney = convert.MustFloat64(fmt.Sprintf("%.2f", money*0.2))
 	} else {
 		redPacketCardIdStr := c.FormValue("account_red_packet_card_id")
 		if redPacketCardIdStr != "" && utils.IsValidNumber(redPacketCardIdStr) {
@@ -145,7 +145,7 @@ func SendRedPacket(c echo.Context) error {
 		"account_id":                 acc.ID,
 		"send_name":                  sendName,
 		"send_photo":                 sendPhoto,
-		"money":                      money,
+		"money":                      convert.MustFloat64(fmt.Sprintf("%.2f",money - feeMoney)),
 		"fee_money":                  feeMoney,
 		"random_money":               randomMoney,
 		"blessings":                  blessings,
@@ -194,12 +194,12 @@ func GetSendRedPacketList(c echo.Context) error {
 		break
 	}
 	page, err := global.DB.QueryPage(&utils.PageTable{
-		Fields:    "red.*,COUNT(log.account_send_red_packet_id) as influenceNum",
-		Table:     "account_send_red_packet red LEFT JOIN account_send_red_packet_access_log log ON red.id=log.account_send_red_packet_id ",
+		Fields:    "red.*,(SELECT COUNT(log.account_send_red_packet_id) FROM account_send_red_packet_access_log log WHERE log.account_send_red_packet_id=red.id) as influenceNum",
+		Table:     "account_send_red_packet red",
 		Where:     "red.account_id=? AND red.status=? AND " + where,
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
-		Groupby:   "log.account_send_red_packet_id",
+		//Groupby:   "log.account_send_red_packet_id",
 		Order:     "red.ct_time DESC",
 	}, acc.ID, enum.NORMAL)
 	if err != nil {

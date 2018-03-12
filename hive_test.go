@@ -195,22 +195,10 @@ func TestFloatStr(t *testing.T) {
 	println(convert.MustInt(fmt.Sprintf("%.2f", totalPrice*100)))
 }
 
-func TestQrCode(t *testing.T) {
-	//生成二维码
-	base64Img, err := utils.CreateQrCodeBytes(fmt.Sprintf("%s|%s|%s", id, ws.Unionid, convert.ToString(time.Now().UnixNano())))
-	if err != nil {
-		t.Error("生成二维码失败")
-	}
-
-	filePath := fmt.Sprintf("%sqrcode/%s/%d.jpg", global.FileConf.Path, utils.CurrentDateByPlace("/"), utils.ID())
-	dst, err := utils.CreateFile(filePath)
-	if err != nil {
-		t.Error("创建文件失败")
-	}
-	defer dst.Close()
-
-	// Copy
-	if _, err = dst.Write(base64Img); err != nil {
-		t.Error("保存文件失败")
-	}
+func TestFloat2(t *testing.T) {
+	var a float64 = 8.23
+	var b float64 = 0.2
+	println(fmt.Sprintf("%.2f", a*b))
+	println(fmt.Sprintf("%.2f",a - b))
+	println(fmt.Sprintf("%.2f",a + b))
 }
