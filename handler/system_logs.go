@@ -23,7 +23,7 @@ func AddSystemLog(c echo.Context) error {
 		"content": content,
 		"ct_time": utils.CurrentTime(),
 		"ct_ip":   c.RealIP(),
-		"id":      utils.GetIp(),
+		"id":      utils.ID(),
 	})
 	if err != nil {
 		return utils.ErrorNull(c, err.Error())
