@@ -251,9 +251,11 @@ func GetShareAccountList(c echo.Context) error {
 }
 
 func GetAppSetting(c echo.Context) error {
-	advertList, _ := GetAdvertList("")
+	advertTextList, _ := GetAdvertTextList(enum.APP, "")
+	advertImgList, _ := GetAdvertList(enum.APP, "")
 	return utils.SuccessNullMsg(c, map[string]interface{}{
-		"advert": advertList,
+		"advert":    advertTextList,
+		"advertImg": advertImgList,
 	})
 }
 
