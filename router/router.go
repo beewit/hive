@@ -106,14 +106,16 @@ func Start() {
 	e.POST("/api/account/share/redpacket/num", handler.GetShareRedPacketCountByRedPacketId)
 
 	//帮助
-	e.POST("/api/help/list",handler.GetHelpList)
-	e.GET("/api/help/list",handler.GetHelpList)
-	e.POST("/api/help/get",handler.GetHelp)
-	e.GET("/api/help/get",handler.GetHelp)
+	e.POST("/api/help/list", handler.GetHelpList)
+	e.GET("/api/help/list", handler.GetHelpList)
+	e.POST("/api/help/get", handler.GetHelp)
+	e.GET("/api/help/get", handler.GetHelp)
 
-	e.GET("/hive/test", func(c echo.Context) error {
-		return utils.Success(c,"test",nil)
-	})
+	//地区
+	e.POST("/api/area/get/child", handler.GetAreaChild)
+	e.POST("/api/area/get", handler.GetArea)
+	e.GET("/api/area/get/child", handler.GetAreaChild)
+	e.GET("/api/area/get", handler.GetArea)
 
 	utils.Open(global.Host)
 	port := ":" + convert.ToString(global.Port)

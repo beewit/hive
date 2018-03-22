@@ -210,8 +210,8 @@ func GetReceiveRedPacketAndCouponList(c echo.Context) error {
 	if redPacket == nil {
 		return utils.ErrorNull(c, "红包不存在或已过期")
 	}
-	sql := "SELECT ar.money,ar.ct_time as receiveTime,wa.* FROM account_receive_red_packet ar LEFT JOIN wx_account wa ON ar.wx_union_id =wa.union_id WHERE account_send_red_packet_id=? AND status<>?"
-	redPacketList, err := global.DB.Query(sql, id, enum.RED_PACKET_STATUS_NOT)
+	sql := "SELECT ar.money,ar.ct_time as receiveTime,wa.* FROM account_receive_red_packet ar LEFT JOIN wx_account wa ON ar.wx_union_id =wa.union_id WHERE account_send_red_packet_id=? AND status<>? AND status<>?"
+	redPacketList, err := global.DB.Query(sql, id, enum.RED_PACKET_STATUS_NOT, enum.RED_PACKET_STATUS_FAIL)
 	if err != nil {
 		global.Log.Error("GetReceiveRedPacketAndCouponList account_receive_red_packet sql error:%s", err.Error())
 		return utils.Error(c, "获取领取红包数据失败", nil)
