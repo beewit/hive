@@ -23,7 +23,6 @@ func TestRedis(t *testing.T) {
 	accMapStr, err := global.RD.GetString("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.YCypNF-PULJ2zgYCumBYtQg4YmiE41O6HgE1hocZd5Q")
 	if err != nil {
 		global.Log.Error(err.Error())
-
 	}
 	if accMapStr == "" {
 		global.Log.Error("已失效")
