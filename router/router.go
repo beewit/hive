@@ -44,8 +44,10 @@ func Start() {
 	e.POST("/api/account/identity/auth/get", handler.GetIdentityAuth, handler.Filter)
 	e.POST("/api/account/func/give/log", handler.GetFuncGiveLog, handler.Filter)
 	e.POST("/api/account/share/account/list", handler.GetShareAccountList, handler.Filter)
-	e.GET("/api/account/advert/list", handler.GetAccountAdvertList, handler.Filter)
-	e.GET("/api/account/advert/add", handler.AddAccountAdvert, handler.Filter)
+	e.POST("/api/account/advert/list", handler.GetAccountAdvertList, handler.Filter)
+	e.POST("/api/account/advert/add", handler.AddAccountAdvert, handler.Filter)
+	e.POST("/api/account/advert/get", handler.GetAccountAdvert, handler.Filter)
+	e.POST("/api/account/advert/del", handler.DelAccountAdvert, handler.Filter)
 
 	e.POST("/api/account/commpany/auth/submit", handler.SubmitAccountCompanyAuth, handler.Filter)
 	e.POST("/api/account/commpany/auth/get", handler.GetAccountCompanyAuthByID, handler.Filter)
