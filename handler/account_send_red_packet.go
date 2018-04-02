@@ -95,6 +95,7 @@ func SendRedPacket(c echo.Context) error {
 	if convert.MustFloat64(randomMoney) > convert.MustFloat64(moneyStr) {
 		return utils.ErrorNull(c, "随机金额最大值不能超过红包的总金额")
 	}
+
 	if blessings != "" && len(blessings) > 250 {
 		return utils.ErrorNull(c, "祝福语字数过长，最长不超过250字")
 	}
@@ -140,12 +141,13 @@ func SendRedPacket(c echo.Context) error {
 			redPacketCardId = convert.MustInt64(card["id"])
 		}
 	}
+	sendMoney := convert.MustFloat64(fmt.Sprintf("%.2f", money-feeMoney))
 	_, err = global.DB.InsertMap("account_send_red_packet", map[string]interface{}{
 		"id":                         id,
 		"account_id":                 acc.ID,
 		"send_name":                  sendName,
 		"send_photo":                 sendPhoto,
-		"money":                      convert.MustFloat64(fmt.Sprintf("%.2f",money - feeMoney)),
+		"money":                      sendMoney,
 		"fee_money":                  feeMoney,
 		"random_money":               randomMoney,
 		"blessings":                  blessings,
@@ -200,7 +202,7 @@ func GetSendRedPacketList(c echo.Context) error {
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		//Groupby:   "log.account_send_red_packet_id",
-		Order:     "red.ct_time DESC",
+		Order: "red.ct_time DESC",
 	}, acc.ID, enum.NORMAL)
 	if err != nil {
 		global.Log.Error("GetSendRedPacketList sql error:%s", err.Error())
