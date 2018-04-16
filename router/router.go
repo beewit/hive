@@ -71,6 +71,15 @@ func Start() {
 
 	e.POST("/api/add/system/log", handler.AddSystemLog)
 
+	// --- 功能试用期 ---
+	e.POST("/api/account/func/tryout/get", handler.GetAccountFuncTryout, handler.Filter)
+	e.POST("/api/account/func/tryout/add", handler.AddAccountFuncTryout, handler.Filter)
+
+	// --- 移动端自动营销发送记录 ---
+	e.POST("/api/account/func/handle/log/add", handler.AddAccountFuncHandleLog, handler.Filter)
+	e.POST("/api/account/func/handle/log/group", handler.GetAccountFuncHandleGroup, handler.Filter)
+	e.POST("/api/account/func/handle/log/list", handler.GetAccountFuncHandleLogList, handler.Filter)
+
 	//小程序
 	//现金券
 	e.POST("/api/account/coupon/add", handler.AddCoupon, handler.Filter)
@@ -120,7 +129,6 @@ func Start() {
 	e.POST("/api/area/get", handler.GetArea)
 	e.GET("/api/area/get/child", handler.GetAreaChild)
 	e.GET("/api/area/get", handler.GetArea)
-
 
 	utils.Open(global.Host)
 	port := ":" + convert.ToString(global.Port)

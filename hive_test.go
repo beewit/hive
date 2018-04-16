@@ -17,6 +17,7 @@ import (
 	"github.com/beewit/hive/global"
 	"github.com/beewit/hive/handler"
 	"github.com/beewit/wechat-ai/smartWechat"
+	"regexp"
 )
 
 func TestRedis(t *testing.T) {
@@ -198,6 +199,12 @@ func TestFloat2(t *testing.T) {
 	var a float64 = 8.23
 	var b float64 = 0.2
 	println(fmt.Sprintf("%.2f", a*b))
-	println(fmt.Sprintf("%.2f",a - b))
-	println(fmt.Sprintf("%.2f",a + b))
+	println(fmt.Sprintf("%.2f", a-b))
+	println(fmt.Sprintf("%.2f", a+b))
+}
+
+func TestMobileReg(t *testing.T) {
+	re, _ := regexp.Compile("(\\d{3})(\\d{4})(\\d{4})")
+	str := re.ReplaceAllString("18227277004", "$1****$3")
+	fmt.Println(str)
 }
