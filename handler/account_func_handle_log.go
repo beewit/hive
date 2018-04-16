@@ -5,6 +5,7 @@ import (
 	"github.com/beewit/hive/global"
 	"github.com/beewit/beekit/utils"
 	"github.com/beewit/beekit/utils/convert"
+	"fmt"
 )
 
 /**
@@ -33,7 +34,7 @@ func AddAccountFuncHandleLog(c echo.Context) error {
 		"func_handle_name": funcHandleName,
 		"obj_name":         objName,
 		"content":          content,
-		"remark":          remark,
+		"remark":           remark,
 		"ct_time":          utils.CurrentTime(),
 		"ip":               c.RealIP(),
 	})
@@ -101,16 +102,20 @@ func GetAccountFuncHandleLogList(c echo.Context) error {
 		return utils.AuthFailNull(c)
 	}
 	funcHandleFlag := c.FormValue("funcHandleFlag")
+	var where string
+	if funcHandleFlag != "" {
+		where += fmt.Sprintf(" AND func_handle_flag IN (%s)", funcHandleFlag)
+	}
 	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
 	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
 	page, err := global.DB.QueryPage(&utils.PageTable{
 		Fields:    "*",
 		Table:     "account_func_handle_log",
-		Where:     "account_id=? AND func_handle_flag=? AND DATE_SUB(CURDATE(), INTERVAL 30 DAY) <=date(log.ct_time)",
+		Where:     "account_id=? AND DATE_SUB(CURDATE(), INTERVAL 30 DAY) <=date(ct_time)" + where,
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		Order:     "ct_time DESC",
-	}, acc.ID, funcHandleFlag)
+	}, acc.ID)
 	if err != nil {
 		global.Log.Error("QueryPage account_coupon sql error:%s", err.Error())
 		return utils.ErrorNull(c, "数据异常")

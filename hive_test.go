@@ -16,7 +16,6 @@ import (
 	"github.com/beewit/beekit/utils/uhttp"
 	"github.com/beewit/hive/global"
 	"github.com/beewit/hive/handler"
-	"github.com/beewit/wechat-ai/smartWechat"
 	"regexp"
 )
 
@@ -71,13 +70,6 @@ func TestUpdatePwd(t *testing.T) {
 		t.Error(err2.Error())
 	}
 	println(string(str))
-}
-
-func TestGetUrlPars(t *testing.T) {
-	s := smartWechat.GetURLParams(map[string]string{
-		"234": "iii",
-		"456": "32r"})
-	println(s)
 }
 
 func TestTime(t *testing.T) {
@@ -160,6 +152,25 @@ func TestGetWechatMiniUnionID(t *testing.T) {
 	}
 	t.Error("无数据")
 	return
+}
+
+func TestGetAccountFuncHandleLogList(t *testing.T) {
+	funcHandleFlag := 10
+	pageIndex := utils.GetPageIndex("1")
+	pageSize := utils.GetPageSize("10")
+	page, err := global.DB.QueryPage(&utils.PageTable{
+		Fields:    "*",
+		Table:     "account_func_handle_log",
+		Where:     " func_handle_flag=? AND DATE_SUB(CURDATE(), INTERVAL 30 DAY) <=date(ct_time)",
+		PageIndex: pageIndex,
+		PageSize:  pageSize,
+		Order:     "ct_time DESC",
+	}, funcHandleFlag)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	println(convert.MustString(page))
 }
 
 func TestRandInt(t *testing.T) {
