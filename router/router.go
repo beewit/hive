@@ -130,6 +130,10 @@ func Start() {
 	e.GET("/api/area/get/child", handler.GetAreaChild)
 	e.GET("/api/area/get", handler.GetArea)
 
+	//行业分类
+	e.POST("/api/industry/get/child", handler.GetIndustryChild)
+	e.POST("/api/industry/get", handler.GetIndustry)
+
 	utils.Open(global.Host)
 	port := ":" + convert.ToString(global.Port)
 	e.Logger.Fatal(e.Start(port))
