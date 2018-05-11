@@ -106,7 +106,7 @@ func GetAccountFuncHandleLogList(c echo.Context) error {
 	page, err := global.DB.QueryPage(&utils.PageTable{
 		Fields:    "*",
 		Table:     "account_func_handle_log",
-		Where:     "account_id=? AND func_handle_flag=? AND DATE_SUB(CURDATE(), INTERVAL 30 DAY) <=date(log.ct_time)",
+		Where:     "account_id=? AND func_handle_flag=? AND DATE_SUB(CURDATE(), INTERVAL 30 DAY) <=date(ct_time)",
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		Order:     "ct_time DESC",

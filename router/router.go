@@ -70,6 +70,7 @@ func Start() {
 	e.POST("/api/wechat/group/class", handler.GetWechatGroupClass, handler.Filter)
 
 	e.POST("/api/add/system/log", handler.AddSystemLog)
+	e.POST("/api/add/install/log", handler.AddInstallLog)
 
 	// --- 功能试用期 ---
 	e.POST("/api/account/func/tryout/get", handler.GetAccountFuncTryout, handler.Filter)
