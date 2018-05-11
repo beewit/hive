@@ -111,15 +111,11 @@ func GetAccountFuncHandleLogList(c echo.Context) error {
 	page, err := global.DB.QueryPage(&utils.PageTable{
 		Fields:    "*",
 		Table:     "account_func_handle_log",
-<<<<<<< HEAD
-		Where:     "account_id=? AND func_handle_flag=? AND DATE_SUB(CURDATE(), INTERVAL 30 DAY) <=date(ct_time)",
-=======
-		Where:     "account_id=? AND DATE_SUB(CURDATE(), INTERVAL 30 DAY) <=date(ct_time)" + where,
->>>>>>> 15629529c5632519fc45c773d3640ffdaa862e1b
+		Where:     "account_id=? AND func_handle_flag=? AND DATE_SUB(CURDATE(), INTERVAL 30 DAY) <=date(ct_time)"+where,
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		Order:     "ct_time DESC",
-	}, acc.ID)
+	}, acc.ID,funcHandleFlag)
 	if err != nil {
 		global.Log.Error("QueryPage account_coupon sql error:%s", err.Error())
 		return utils.ErrorNull(c, "数据异常")
