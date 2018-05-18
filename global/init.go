@@ -44,6 +44,7 @@ type Account struct {
 	Photo    string `json:"photo"`
 	Mobile   string `json:"mobile"`
 	Status   string `json:"status"`
+	OrgId    int64  `json:"org_id"`
 }
 
 func ToByteAccount(b []byte) *Account {

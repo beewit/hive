@@ -48,6 +48,7 @@ func Start() {
 	e.POST("/api/account/advert/add", handler.AddAccountAdvert, handler.Filter)
 	e.POST("/api/account/advert/get", handler.GetAccountAdvert, handler.Filter)
 	e.POST("/api/account/advert/del", handler.DelAccountAdvert, handler.Filter)
+	e.POST("/api/account/advert/check/log", handler.AddAccountAdvertCheckLog, handler.Filter)
 
 	e.POST("/api/account/commpany/auth/submit", handler.SubmitAccountCompanyAuth, handler.Filter)
 	e.POST("/api/account/commpany/auth/get", handler.GetAccountCompanyAuthByID, handler.Filter)
@@ -134,6 +135,13 @@ func Start() {
 	//行业分类
 	e.POST("/api/industry/get/child", handler.GetIndustryChild)
 	e.POST("/api/industry/get", handler.GetIndustry)
+
+	//组织架构
+	e.POST("/api/org/get/child", handler.GetOrgChild, handler.Filter)
+	e.POST("/api/org/get/child/all", handler.GetOrgChildAll, handler.Filter)
+	e.POST("/api/org/get", handler.GetOrg, handler.Filter)
+	e.POST("/api/org/del", handler.DelOrg, handler.Filter)
+	e.POST("/api/org/add", handler.AddOrg, handler.Filter)
 
 	utils.Open(global.Host)
 	port := ":" + convert.ToString(global.Port)

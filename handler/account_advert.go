@@ -7,6 +7,7 @@ import (
 	"github.com/beewit/beekit/utils/enum"
 	"strings"
 	"github.com/beewit/beekit/utils/convert"
+	"fmt"
 )
 
 /**
@@ -17,16 +18,23 @@ func GetAccountAdvertList(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	where := fmt.Sprintf("AND account_advert.account_id=%v", acc.ID)
+	if acc.OrgId > 0 {
+		org := GetOrgById(acc.OrgId)
+		if org != nil {
+			where = "AND (account_advert.account_id=" + convert.ToString(acc.ID) + " OR Concat('-',org.relation,'-') like '-" + convert.ToString(org["relation"]) + "-%')"
+		}
+	}
 	pageIndex := utils.GetPageIndex(c.FormValue("pageIndex"))
 	pageSize := utils.GetPageSize(c.FormValue("pageSize"))
 	page, err := global.DB.QueryPage(&utils.PageTable{
-		Fields:    "*",
-		Table:     "account_advert",
-		Where:     "status=? AND account_id=?",
+		Fields:    "account_advert.*,org.relation,if(account_advert.org_id!=NULL AND cl.id !=NULL,TRUE,FALSE) as sendOrgStatus",
+		Table:     "account_advert LEFT JOIN org ON org_id=org.id LEFT JOIN account_advert_check_log cl ON cl.account_advert_id=account_advert.id",
+		Where:     "account_advert.status=? " + where,
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
-		Order:     "ct_time DESC",
-	}, enum.NORMAL, acc.ID)
+		Order:     "account_advert.ct_time DESC",
+	}, enum.NORMAL)
 	if err != nil {
 		global.Log.Error("GetAccountAdvertList sql error：%s", err.Error())
 		return utils.Error(c, "数据异常，"+err.Error(), nil)
@@ -183,7 +191,6 @@ func DelAccountAdvert(c echo.Context) error {
 		return utils.ErrorNull(c, "删除失败")
 	}
 }
-
 
 /**
 	删除个人广告
