@@ -47,6 +47,16 @@ type Account struct {
 	OrgId    int64  `json:"org_id"`
 }
 
+//组织
+type Org struct {
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	ParentId  int64  `json:"parent_id"`
+	Relation  string `json:"relation"`
+	AccountId int64  `json:"account_id"`
+	Type      string `json:"type"`
+}
+
 func ToByteAccount(b []byte) *Account {
 	var rp = new(Account)
 	err := json.Unmarshal(b[:], &rp)
@@ -71,6 +81,33 @@ func ToInterfaceAccount(m interface{}) *Account {
 		return nil
 	}
 	return ToByteAccount(b)
+}
+
+
+func ToByteOrg(b []byte) *Org {
+	var rp = new(Org)
+	err := json.Unmarshal(b[:], &rp)
+	if err != nil {
+		Log.Error(err.Error())
+		return nil
+	}
+	return rp
+}
+
+func ToMapOrg(m map[string]interface{}) *Org {
+	b := convert.ToMapByte(m)
+	if b == nil {
+		return nil
+	}
+	return ToByteOrg(b)
+}
+
+func ToInterfaceOrg(m interface{}) *Org {
+	b := convert.ToInterfaceByte(m)
+	if b == nil {
+		return nil
+	}
+	return ToByteOrg(b)
 }
 
 func GetSavePath(path string) string {

@@ -34,6 +34,7 @@ func GetAccountAdvertList(c echo.Context) error {
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
 		Order:     "account_advert.ct_time DESC",
+		Groupby:   "account_advert.id",
 	}, enum.NORMAL)
 	if err != nil {
 		global.Log.Error("GetAccountAdvertList sql error：%s", err.Error())

@@ -219,3 +219,8 @@ func TestMobileReg(t *testing.T) {
 	str := re.ReplaceAllString("18227277004", "$1****$3")
 	fmt.Println(str)
 }
+
+func TestJsonToMap(t *testing.T){
+	json:=`[{"nickname":"张三","mobile":"18223277005","gender":"男"},{"nickname":"李四","mobile":"18223277006","gender":"女"}]`
+	convert.String2MapList(json)
+}
